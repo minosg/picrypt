@@ -11,9 +11,9 @@
  * File Description: Method Implementations                                   *
  \****************************************************************************/
 
-
-#include "picrypt.h"
 #include "authorized_hwd.h"
+#include "picrypt.h"
+#include <openssl/sha.h>
 
 /**************************\
 * Custom User Lock         *
@@ -32,6 +32,46 @@ uint64_t hash(uint64_t serial)
 /**************************\
 * Method Implementations   *
 \**************************/
+char * sha1_from_file(char * fname, char *sha_hash)
+{
+  FILE *fptr;
+  unsigned char sha1_buffer[SHA_DIGEST_LENGTH];
+  unsigned char *fbuffer;
+  unsigned long fileLen;
+
+  // Open the file
+  fptr=fopen("/etc/fstab", "rb");
+  if (!fptr)
+  {
+    fprintf(stderr, "Unable to open file %s", "name");
+    return NULL;
+  }
+
+  //Get file length
+  fseek(fptr, 0, SEEK_END);
+  fileLen=ftell(fptr);
+  fseek(fptr, 0, SEEK_SET);
+
+  //Allocate memory
+  fbuffer=(unsigned char *)malloc(fileLen+1);
+
+  //Read file contents into buffer
+  fread(fbuffer, fileLen, 1, fptr);
+  fclose(fptr);
+
+  /* Calculate SHA1 Hash */
+  SHA1(fbuffer, fileLen, sha1_buffer);
+
+  uint8_t j=0;
+  /* Go through the buffer, convert the chars to zero-padded hex strings */
+  for(int i = 0;i < SHA_DIGEST_LENGTH;++i){
+    snprintf(sha_hash+j, 4 ,"%02x", sha1_buffer[i]);
+    j += 2;
+  }
+  /* No null termination required, snprintf will add it */
+  free(fbuffer);
+  return sha_hash;
+}
 
 void string_slice_from_file(char * fname,
                             uint32_t offset,
@@ -118,10 +158,33 @@ int main(int argc, char **argv)
 
         char m_id[MACHINE_ID_SIZE+1];
         soft_machine_id(&m_id);
-
         uint64_t serial = pi_serial();
         uint64_t hash_key = hash(serial);
 
+
+        /* Only allocate the memory if FILE SEED is set*/
+        #ifdef FILE_SEED
+          /* Allocate the buffers that will hide the filename and seed */
+          int16_t file_seed_e[strlen(FILE_SEED)];
+          int16_t file_sha_p[SHA_DIGEST_LENGTH*2];
+
+          /* Allocate the memory for the decryption buffers*/
+          char file_seed_d[strlen(FILE_SEED)+1];
+          char file_sha_d[(SHA_DIGEST_LENGTH*2)+1];
+          char sha_hash_r[(SHA_DIGEST_LENGTH*2)+1];
+          
+          /* Bit Scrabble the buffers */
+          random_fill_array(file_seed_e, sizeof(file_seed_e));
+          random_fill_array(file_sha_p, sizeof(file_sha_p));
+          
+          /* Store the sensitive information */
+          encrypt_fname(FILE_SEED, file_seed_e, sizeof(file_seed_e));
+          encrypt_fname(FILE_SHA1, file_sha_p, sizeof(file_sha_p));
+     
+          printf("%s\n", decrypt_fname(file_seed_e, file_seed_d, sizeof(file_seed_d)));
+          printf("Result: %s\n", sha1_from_file(decrypt_fname(file_seed_e, file_seed_d, sizeof(file_seed_d)), sha_hash_r));
+        #endif
+        return 0;
         /* Ensure the executable is run from intended machine.
            This check is important because the executable is not encrypted,
            and running it over to a different hwd would be an attack vector. */

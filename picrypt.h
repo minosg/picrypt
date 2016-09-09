@@ -20,6 +20,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include "strhide.h"
 
 #define __STDC_FORMAT_MACROS
 #define CPU_SER_SIZE    8                 ///< Len of serial in Bytes

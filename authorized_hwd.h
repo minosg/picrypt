@@ -12,13 +12,12 @@
  \****************************************************************************/
 /* Those fields need to be completed  by the user */
 
-#include "picrypt.h"
-
 #define HWD_ID "aabbccdd"                              ///< CPU_Serial
 #define MACHINE_ID "9a8d3bccfe387dae290bf94c121207bec" ///< Soft ID
 #define FILE_SEED "/etc/fstab"                         ///< File for SHA SEED
+#define FILE_SHA1 "9809a6a289038cac0a14bc50b65e2e228818409e"
 #define HARWARE_SOURCE "/dev/ttyUSB0"                  ///< Port of HW dongle
-#define GODMODE 0                                      ///< Will be removed
+#define GODMODE 1                                      ///< Will be removed
 #define PI_VER 2                                       ///< PI Board Version
 #define PROTECTION CARE_BEAR                           ///< Level of protection
 #define _STRHT_USR_SALT 0x01                           ///< Override String Salt
