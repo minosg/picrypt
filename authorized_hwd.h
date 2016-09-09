@@ -10,7 +10,7 @@
  * Project: PiCrypt                                                           *
  * File Description: User input parameters                                    *
  \****************************************************************************/
-/* Those fields need to be completed  by thte */
+/* Those fields need to be completed  by the user */
 
 #include "picrypt.h"
 
@@ -21,3 +21,4 @@
 #define GODMODE 0                                      ///< Will be removed
 #define PI_VER 2                                       ///< PI Board Version
 #define PROTECTION CARE_BEAR                           ///< Level of protection
+#define _STRHT_USR_SALT 0x01                           ///< Override String Salt
