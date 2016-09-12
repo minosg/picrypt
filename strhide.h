@@ -63,7 +63,7 @@ void random_fill_array(int16_t *array, uint8_t byte_size);
  * @param byte_size Size of buffer in bytes.
  *
  */
-void encrypt_fname(char *raw_string, int16_t *output, uint8_t byte_size);
+void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size);
 
 /**
  * Decryption function that converts a signed int array back to original string
@@ -74,4 +74,4 @@ void encrypt_fname(char *raw_string, int16_t *output, uint8_t byte_size);
  * @param byte_size Size of buffer in bytes.
  *
  */
-char* decrypt_fname(int16_t *encr_string, char *output, uint8_t byte_size);
+char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size);

@@ -28,8 +28,8 @@ int main(int argc, const char *argv[])
  print_array(cr_string,sizeof(cr_string));
 
 
- encrypt_fname(test_string, cr_string, sizeof(cr_string));
- decrypt_fname(cr_string, dec_string, sizeof(dec_string));
+ encrypt_string(test_string, cr_string, sizeof(cr_string));
+ decrypt_string(cr_string, dec_string, sizeof(dec_string));
 
  printf("Encrypting %s stored as:\n", test_string);
  print_array(cr_string,sizeof(cr_string));
