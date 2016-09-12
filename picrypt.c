@@ -176,14 +176,42 @@ void help(const char* prgm)
 
 int main(int argc, char **argv)
 {
+        bool permitted = true;
+        #ifdef HWD_ID
+          uint64_t serial = pi_serial();
+          uint64_t hash_key = hash(serial);
+          uint64_t permitted_serial = (uint64_t)strtoull(HWD_ID, NULL, 16);
+          if ((PROTECTION >= SCRIPT_KIDDY) && (permitted_serial != serial))
+          {
+            printf("Serial Miss-Match!! \n");
+            permitted = false;
+          }
+        #endif
+        #ifdef MACHINE_ID
+          /* Allocate buffers */
+          int16_t machine_id_hd_e[MACHINE_ID_SIZE * 2];
+          int16_t machine_id_rt_e[MACHINE_ID_SIZE * 2];
 
-        char m_id[MACHINE_ID_SIZE+1];
-        soft_machine_id(m_id);
-        uint64_t serial = pi_serial();
-        uint64_t hash_key = hash(serial);
+          /* Exctact Current Machine ID (not sensitive) */
+          char machine_id_hd_d[MACHINE_ID_SIZE + 1];
+          soft_machine_id(machine_id_hd_d);
 
+          encrypt_string(MACHINE_ID, machine_id_hd_e, sizeof(machine_id_hd_e));
+          encrypt_string(machine_id_hd_d, machine_id_rt_e, sizeof(machine_id_rt_e));
 
-        /* Only allocate the memory if FILE SEED is set*/
+          if (PROTECTION >= ARCH_USER)
+          {
+            if (!compare_encrypted_str(machine_id_rt_e,
+                              machine_id_hd_e,
+                              sizeof(machine_id_rt_e),
+                              sizeof(machine_id_hd_e)))
+            {
+              printf("Machine ID Miss Match!! \n");
+              permitted = false;
+            }
+          }
+        #endif
+
         #if defined(FILE_SEED) && defined(FILE_SHA1)
           /* Allocate the buffers that will hide the filename and seed */
           /* Naming convention:
@@ -191,13 +219,12 @@ int main(int argc, char **argv)
                                hash_defined/runtime
                                encrypted/decrypted*/
           int16_t file_seed_hd_e[strlen(FILE_SEED)];
-          int16_t file_sha_hd_e[SHA_DIGEST_LENGTH*2];
-          int16_t file_sha_rt_e[SHA_DIGEST_LENGTH*2];
+          int16_t file_sha_hd_e[SHA_DIGEST_LENGTH * 2];
+          int16_t file_sha_rt_e[SHA_DIGEST_LENGTH * 2];
 
           /* Allocate the memory for the decryption buffers */
-          char file_seed_hd_d[strlen(FILE_SEED)+1];
-          char file_sha_rt_d[(SHA_DIGEST_LENGTH*2)+1];
-          char sha_hash_rt_d[(SHA_DIGEST_LENGTH*2)+1];
+          char file_sha_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
+          char sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
 
           /* Store the sensitive information */
           encrypt_string(FILE_SEED, file_seed_hd_e, sizeof(file_seed_hd_e));
@@ -207,24 +234,30 @@ int main(int argc, char **argv)
           printf("Defined SHA: %s\n", decrypt_string(file_sha_hd_e, file_sha_rt_d, sizeof(file_sha_rt_d)) );
           printf("Runtime SHA: %s\n", decrypt_string(file_sha_rt_e, sha_hash_rt_d, sizeof(sha_hash_rt_d)));
 
-          if (compare_encrypted_str(file_sha_rt_e,
-                          file_sha_hd_e,
-                          sizeof(file_sha_rt_e),
-                          sizeof(file_sha_hd_e))) printf("SHA Matches!! \n");
+          if (PROTECTION >= PEN_TESTER)
+          {
+            if (!compare_encrypted_str(file_sha_rt_e,
+                            file_sha_hd_e,
+                            sizeof(file_sha_rt_e),
+                            sizeof(file_sha_hd_e)))
+            {
+              printf("SHA1 Miss-Match!! \n");
+              permitted = false;
+            }
+          }
+
 
         #endif
-        return 0;
         /* Ensure the executable is run from intended machine.
            This check is important because the executable is not encrypted,
            and running it over to a different hwd would be an attack vector. */
-        uint64_t permitted_serial = (uint64_t)strtoull(HWD_ID, NULL, 16);
 
-        #if GODMODE != 1
-        if (permitted_serial != serial || strcmp(MACHINE_ID,m_id) != 0) {
-                printf("@@ is the password you seek, you pesky pirate!!!\n");
-                exit(1);
+        if (!permitted)
+        {
+          printf("This is the password you are looking for...\n"
+                 "( You pesky pirate !!! )\n");
+          exit(1);
         }
-        #endif
 
         if (argc == 1) {
                 help(argv[0]);
@@ -234,7 +267,7 @@ int main(int argc, char **argv)
         } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
                 printf("Calculating Hash\n");
                 printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n", serial, serial);
-                printf("Machine-id:   %s\n",m_id);
+                printf("Machine-id:   %s\n",machine_id_hd_d);
                 printf("Hash Key:     %" PRIx64 "\n", hash_key);
         } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
                 printf("%" PRIx64 "\n", hash_key);
