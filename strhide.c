@@ -23,18 +23,7 @@
 void print_array(int16_t *array, uint8_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
-    printf("Byte %d -> %x\n", i, array[i]);
-  }
-}
-
-void random_fill_array(int16_t *array, uint8_t byte_size)
-{
-  for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
-    /* Seed random with time and previous element if exists */
-    if (!i) srand (time(NULL));
-    else srand (time(NULL)+array[i-1]);
-    /* Empty centre bits for the obsuscated integer */
-    array[i] = (rand() % INT16_MAX) & 0xF00F;
+    printf("Byte %d -> 0x%04X\n", i, array[i]);
   }
 }
 
@@ -42,14 +31,26 @@ void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size)
 {
   char c;
   for (uint8_t i=0; i<_STRHT_ARR_LEN(output, byte_size); i++) {
-     /* Offset the first character using ! as the starting point of the
-     ASCII charset and move it per user salt. */
-    if (!i)  c = raw_string[i] - _STRHT_FIRST_CHAR;
-    /* Every consecutive character is cacluated as the distance to the previous
-    taking into consideration offset and sal. */
-    else c = (raw_string[i]- _STRHT_FIRST_CHAR) - raw_string[i-1];
-    /* Set the bits 4 to 13 only , including the user salt*/
-    output[i] = (output[i] & 0xF00F) | (c + _STRHT_USR_SALT) << 4;
+    if (!i)
+    {
+      /* Random time based seed */
+      srand (time(NULL));
+      /* Offset the first character using ! as the starting point of the
+      ASCII charset and move it per user salt. */
+      c = raw_string[i] - _STRHT_FIRST_CHAR;
+    }
+    else
+    {
+      /* Random time and previous element based seed */
+      srand (time(NULL)+output[i-1]);
+
+      /* Every consecutive character is cacluated as the distance to the previous
+      taking into consideration offset and sal. */
+      c = (raw_string[i]- _STRHT_FIRST_CHAR) - raw_string[i-1];
+    }
+    /* Store the data using random for bits 0-3 and 12-15 with random data.
+     Set bits 4 to 11 with message shifted according to user defined salt */
+    output[i] = ((rand() % INT16_MAX) & 0xF00F) | (c + _STRHT_USR_SALT) << 4;
   }
   return;
 }
@@ -71,4 +72,22 @@ char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size)
   }
   output[len-1]=0;
   return output;
+}
+
+bool compare_encrypted_str(int16_t *en_str_one,
+                          int16_t *en_str_two,
+                          uint8_t bsize_str_one,
+                          uint8_t bsize_str_two)
+{
+  bool ret = true;
+
+  /* If buffers of different size, return not equal */
+  if (bsize_str_one != bsize_str_two) return false;
+
+  /* Go through the buffer and compare the masked contents. If a single char
+  does not match the strings are not equal */
+  for (uint8_t i=0; i<_STRHT_ARR_LEN(en_str_one, bsize_str_one); i++) {
+    if ((en_str_one[i] & 0x0FF0) != (en_str_two[i] & 0x0FF0)) ret = false;
+  }
+  return ret;
 }

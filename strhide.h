@@ -47,15 +47,6 @@
 void print_array(int16_t *array, uint8_t byte_size);
 
 /**
- * Fill int16_t array elements with random data byte masked by 0xF00F
- *
- * @param serial array array to fill.
- * @param serial byte_size allocated size of array in bytes.
- *
- */
-void random_fill_array(int16_t *array, uint8_t byte_size);
-
-/**
  * Ecnryption function that hides a string inside a signed int array
  *
  * @param raw_string Input string.
@@ -75,3 +66,19 @@ void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size);
  *
  */
 char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size);
+
+/**
+ * Compare two strings in encrypted buffers and return true if the contain the
+ * same string. The fucntion assumes the bufffer are of equal length that is
+ * defined by the caller.
+ *
+ * @param en_str_one Input signed integer array.
+ * @param en_str_two Pre-Allocated buffer to store the result.
+ * @param byte_size Size of buffer in bytes.
+ *
+ * @return True if strrings are equal False otherwise
+ */
+bool compare_encrypted_str(int16_t *en_str_one,
+                         int16_t *en_str_two,
+                         uint8_t bsize_str_one,
+                         uint8_t bsize_str_two);
