@@ -44,7 +44,7 @@
  * @param serial byte_size allocated size of array in bytes.
  *
  */
-void print_array(int16_t *array, uint8_t byte_size);
+void print_array(int16_t *array, const uint8_t byte_size);
 
 /**
  * Ecnryption function that hides a string inside a signed int array
@@ -54,7 +54,9 @@ void print_array(int16_t *array, uint8_t byte_size);
  * @param byte_size Size of buffer in bytes.
  *
  */
-void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size);
+void encrypt_string(char const *raw_string,
+                    int16_t *output,
+                    const uint8_t byte_size);
 
 /**
  * Decryption function that converts a signed int array back to original string
@@ -65,7 +67,9 @@ void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size);
  * @param byte_size Size of buffer in bytes.
  *
  */
-char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size);
+char* decrypt_string(int16_t const *encr_string,
+                     char *output,
+                     const uint8_t byte_size);
 
 /**
  * Compare two strings in encrypted buffers and return true if the contain the
@@ -80,5 +84,5 @@ char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size);
  */
 bool compare_encrypted_str(int16_t *en_str_one,
                          int16_t *en_str_two,
-                         uint8_t bsize_str_one,
-                         uint8_t bsize_str_two);
+                         const uint16_t bsize_str_one,
+                         const uint16_t bsize_str_two);

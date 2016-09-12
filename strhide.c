@@ -20,14 +20,16 @@
 
 #include "strhide.h"
 
-void print_array(int16_t *array, uint8_t byte_size)
+void print_array(int16_t *array, const uint8_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
     printf("Byte %d -> 0x%04X\n", i, array[i]);
   }
 }
 
-void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size)
+void encrypt_string(char const *raw_string,
+                    int16_t *output,
+                    const uint8_t byte_size)
 {
   char c;
   for (uint8_t i=0; i<_STRHT_ARR_LEN(output, byte_size); i++) {
@@ -44,8 +46,8 @@ void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size)
       /* Random time and previous element based seed */
       srand (time(NULL)+output[i-1]);
 
-      /* Every consecutive character is cacluated as the distance to the previous
-      taking into consideration offset and sal. */
+      /* Every consecutive character is cacluated as the distance to the
+      previous taking into consideration offset and salt. */
       c = (raw_string[i]- _STRHT_FIRST_CHAR) - raw_string[i-1];
     }
     /* Store the data using random for bits 0-3 and 12-15 with random data.
@@ -55,7 +57,9 @@ void encrypt_string(char *raw_string, int16_t *output, uint8_t byte_size)
   return;
 }
 
-char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size)
+char* decrypt_string(int16_t const *encr_string,
+                     char *output,
+                     const uint8_t byte_size)
 {
   output[0] = 0;
   char c;
@@ -76,8 +80,8 @@ char* decrypt_string(int16_t *encr_string, char *output, uint8_t byte_size)
 
 bool compare_encrypted_str(int16_t *en_str_one,
                           int16_t *en_str_two,
-                          uint8_t bsize_str_one,
-                          uint8_t bsize_str_two)
+                          const uint16_t bsize_str_one,
+                          const uint16_t bsize_str_two)
 {
   bool ret = true;
 
