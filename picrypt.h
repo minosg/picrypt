@@ -79,13 +79,13 @@ uint64_t pi_serial();
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-void string_slice_from_file(char *fname,
-                            uint32_t offset,
-                            uint32_t len,
-                            char (*buffer)[]);
+void string_slice_from_file(char const *fname,
+                            const uint32_t offset,
+                            const uint32_t len,
+                            char *buffer);
 
 /* Copy the software machine id string from file to an initialized buffer */
-void soft_machine_id(char (*ret_buff)[]);
+void soft_machine_id(char *ret_buff);
 
 /**
  * User Key generation Routine
@@ -94,7 +94,7 @@ void soft_machine_id(char (*ret_buff)[]);
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-uint64_t hash(uint64_t serial);
+uint64_t hash(const uint64_t serial);
 
 /**
  * Crate a RAM_FILE containing the hash key
@@ -102,7 +102,7 @@ uint64_t hash(uint64_t serial);
  * @param hash_key Integer representation of the calculated haskhed password.
  *
  */
-void ram_key(uint64_t hash_key);
+void ram_key(const uint64_t hash_key);
 
 /**
  * Check a hash againist the calcuated hardware hash
@@ -111,7 +111,7 @@ void ram_key(uint64_t hash_key);
  *
  * @return True if key matches
  */
-bool validate_key(char* key);
+bool validate_key(char const *key);
 
 /**
  * Print Help Menu
@@ -130,7 +130,7 @@ void help(const char* prgm);
  *
  * @return sha1 string.
  */
-char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash);
+char * sha1_from_en_buf(int16_t const *fname, const uint16_t byte_size, char *sha_hash);
 
 /**
  * Check a hash againist the calcuated hardware hash
@@ -141,7 +141,7 @@ char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash);
  *
  * @return The sha_buff pointer.
  */
-int16_t * sha1_from_en_buf_to_en_buff(int16_t *fname, uint16_t byte_size, int16_t *sha_buff);
+int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,const uint16_t byte_size, int16_t *sha_buff);
 
 
 #endif /* _PICRYPT_H_ */

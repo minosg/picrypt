@@ -24,7 +24,7 @@ method. By defualy it just generates a key equal to the cpu serial, which is
 UNSAFE. Esure you maintain the cast to 64Bit unsigned integer before returning
 the result of your method */
 
-uint64_t hash(uint64_t serial)
+uint64_t hash(const uint64_t serial)
 {
   return (uint64_t)(serial);
 }
@@ -73,7 +73,7 @@ char * sha1_from_file(char * fname, char *sha_hash)
   return sha_hash;
 }
 
-char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash)
+char * sha1_from_en_buf(int16_t const *fname,const uint16_t byte_size, char *sha_hash)
 {
   /* Get the file path */
   char fname_d[strlen(FILE_SEED)+1];
@@ -81,8 +81,8 @@ char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash)
   return sha1_from_file(fname_d, sha_hash);
 }
 
-int16_t * sha1_from_en_buf_to_en_buff(int16_t *fname,
-                                     uint16_t byte_size,
+int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
+                                     const uint16_t byte_size,
                                      int16_t *sha_buff)
 {
   /* Calcuate the sha1 */
@@ -94,10 +94,10 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t *fname,
   return sha_buff;
 }
 
-void string_slice_from_file(char * fname,
-                            uint32_t offset,
-                            uint32_t byte_size,
-                            char (*buffer)[])
+void string_slice_from_file(char const *fname,
+                            const uint32_t offset,
+                            const uint32_t byte_size,
+                            char *buffer)
 {
         FILE *fptr;
         // Open the file
@@ -111,7 +111,7 @@ void string_slice_from_file(char * fname,
                 fseek(fptr, offset, SEEK_SET);
         }
         /* Read the data from the file into the string */
-        fgets(*buffer, byte_size+1, fptr);
+        fgets(buffer, byte_size+1, fptr);
         fclose(fptr);
         return;
 }
@@ -120,17 +120,17 @@ uint64_t pi_serial()
 {
 
         char ser_buffer[CPU_SER_SIZE+1];
-        string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, &ser_buffer);
+        string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, ser_buffer);
         return (uint64_t)strtoull(ser_buffer, NULL, 16);
 }
 
-void soft_machine_id(char (*ret_buff)[])
+void soft_machine_id(char *ret_buff)
 {
         string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
         return;
 }
 
-void ram_key(uint64_t hash_key)
+void ram_key(const uint64_t hash_key)
 {
         FILE *fptr;
         fptr=fopen(RAM_FILE,"w");
@@ -145,7 +145,7 @@ void ram_key(uint64_t hash_key)
         fclose(fptr);
 }
 
-bool validate_key(char* key)
+bool validate_key(char const *key)
 {
         if (strlen(key) > 8)
         {
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 {
 
         char m_id[MACHINE_ID_SIZE+1];
-        soft_machine_id(&m_id);
+        soft_machine_id(m_id);
         uint64_t serial = pi_serial();
         uint64_t hash_key = hash(serial);
 
