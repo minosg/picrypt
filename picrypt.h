@@ -111,7 +111,6 @@ void ram_key(uint64_t hash_key);
  *
  * @return True if key matches
  */
-
 bool validate_key(char* key);
 
 /**
@@ -121,5 +120,28 @@ bool validate_key(char* key);
  *
  */
 void help(const char* prgm);
+
+/**
+ * Generate sha1 hash from filename that is stored in a strhide encoded buffer
+ *
+ * @param fname int16_t buffer that the encrypted path is stored.
+ * @param byte_size Integer size of the buffer in bytes.
+ * @param sha_hash buffer to store the sha1 string.
+ *
+ * @return sha1 string.
+ */
+char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash);
+
+/**
+ * Check a hash againist the calcuated hardware hash
+ *
+ * @param fname int16_t buffer that the encrypted path is stored.
+ * @param byte_size Integer size of the buffer in bytes.
+ * @param sha_buff Output buffer to store the sha1 string in ecnrypted format.
+ *
+ * @return The sha_buff pointer.
+ */
+int16_t * sha1_from_en_buf_to_en_buff(int16_t *fname, uint16_t byte_size, int16_t *sha_buff);
+
 
 #endif /* _PICRYPT_H_ */

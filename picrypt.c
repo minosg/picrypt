@@ -73,6 +73,27 @@ char * sha1_from_file(char * fname, char *sha_hash)
   return sha_hash;
 }
 
+char * sha1_from_en_buf(int16_t *fname, uint16_t byte_size, char *sha_hash)
+{
+  /* Get the file path */
+  char fname_d[strlen(FILE_SEED)+1];
+  decrypt_string(fname, fname_d, sizeof(fname_d));
+  return sha1_from_file(fname_d, sha_hash);
+}
+
+int16_t * sha1_from_en_buf_to_en_buff(int16_t *fname,
+                                     uint16_t byte_size,
+                                     int16_t *sha_buff)
+{
+  /* Calcuate the sha1 */
+  char sha_d[(SHA_DIGEST_LENGTH*2)+1];
+  sha1_from_en_buf(fname,byte_size, sha_d);
+
+  /* During encryption one char is encoded as 4 bytes */
+  encrypt_string(sha_d, sha_buff, SHA_DIGEST_LENGTH*4);
+  return sha_buff;
+}
+
 void string_slice_from_file(char * fname,
                             uint32_t offset,
                             uint32_t byte_size,
@@ -163,26 +184,34 @@ int main(int argc, char **argv)
 
 
         /* Only allocate the memory if FILE SEED is set*/
-        #ifdef FILE_SEED
+        #if defined(FILE_SEED) && defined(FILE_SHA1)
           /* Allocate the buffers that will hide the filename and seed */
-          int16_t file_seed_e[strlen(FILE_SEED)];
-          int16_t file_sha_p[SHA_DIGEST_LENGTH*2];
+          /* Naming convention:
+           variable_hd/rt_e -> variable name,
+                               hash_defined/runtime
+                               encrypted/decrypted*/
+          int16_t file_seed_hd_e[strlen(FILE_SEED)];
+          int16_t file_sha_hd_e[SHA_DIGEST_LENGTH*2];
+          int16_t file_sha_rt_e[SHA_DIGEST_LENGTH*2];
 
-          /* Allocate the memory for the decryption buffers*/
-          char file_seed_d[strlen(FILE_SEED)+1];
-          char file_sha_d[(SHA_DIGEST_LENGTH*2)+1];
-          char sha_hash_r[(SHA_DIGEST_LENGTH*2)+1];
-          
-          /* Bit Scrabble the buffers */
-          random_fill_array(file_seed_e, sizeof(file_seed_e));
-          random_fill_array(file_sha_p, sizeof(file_sha_p));
-          
+          /* Allocate the memory for the decryption buffers */
+          char file_seed_hd_d[strlen(FILE_SEED)+1];
+          char file_sha_rt_d[(SHA_DIGEST_LENGTH*2)+1];
+          char sha_hash_rt_d[(SHA_DIGEST_LENGTH*2)+1];
+
           /* Store the sensitive information */
-          encrypt_fname(FILE_SEED, file_seed_e, sizeof(file_seed_e));
-          encrypt_fname(FILE_SHA1, file_sha_p, sizeof(file_sha_p));
-     
-          printf("%s\n", decrypt_fname(file_seed_e, file_seed_d, sizeof(file_seed_d)));
-          printf("Result: %s\n", sha1_from_file(decrypt_fname(file_seed_e, file_seed_d, sizeof(file_seed_d)), sha_hash_r));
+          encrypt_string(FILE_SEED, file_seed_hd_e, sizeof(file_seed_hd_e));
+          encrypt_string(FILE_SHA1, file_sha_hd_e, sizeof(file_sha_hd_e));
+          sha1_from_en_buf_to_en_buff(file_seed_hd_e, sizeof(file_seed_hd_e), file_sha_rt_e);
+
+          printf("Defined SHA: %s\n", decrypt_string(file_sha_hd_e, file_sha_rt_d, sizeof(file_sha_rt_d)) );
+          printf("Runtime SHA: %s\n", decrypt_string(file_sha_rt_e, sha_hash_rt_d, sizeof(sha_hash_rt_d)));
+
+          if (compare_encrypted_str(file_sha_rt_e,
+                          file_sha_hd_e,
+                          sizeof(file_sha_rt_e),
+                          sizeof(file_sha_hd_e))) printf("SHA Matches!! \n");
+
         #endif
         return 0;
         /* Ensure the executable is run from intended machine.
