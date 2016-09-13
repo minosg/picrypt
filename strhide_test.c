@@ -35,9 +35,9 @@ int main(int argc, const char *argv[])
  encrypt_string(ref_string, rf_string, sizeof(rf_string));
 
 /* Decrypt the user string */
- decrypt_string(cr_string, dec_string, sizeof(dec_string));
+ decrypt_string(cr_string, dec_string, sizeof(cr_string), sizeof(dec_string));
  printf("Encrypting %s stored as:\n", test_string);
- print_array(cr_string,sizeof(cr_string));
+ //print_array(cr_string,sizeof(cr_string));
  printf("Decrypted as: \"%s\"\n", dec_string);
 
  if (compare_encrypted_str(rf_string,

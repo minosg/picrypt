@@ -20,7 +20,7 @@
 
 #include "strhide.h"
 
-void print_array(int16_t *array, const uint8_t byte_size)
+void print_array(int16_t *array, const uint16_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
     printf("Byte %d -> 0x%04X\n", i, array[i]);
@@ -29,9 +29,17 @@ void print_array(int16_t *array, const uint8_t byte_size)
 
 void encrypt_string(char const *raw_string,
                     int16_t *output,
-                    const uint8_t byte_size)
+                    const uint16_t byte_size)
 {
   char c;
+  /* Do a small sanity check on the buffers sizes */
+  if ((strlen(raw_string) * 2) != byte_size) {
+    printf("Warning,  wrongly allocated memory for encrypt buffer:"
+           " (str) %ld, (buf) %" PRIx16 "\n",
+           strlen(raw_string) * 2 ,
+           byte_size);
+  }
+  /* Limit the number of writes to buffer element count */
   for (uint8_t i=0; i<_STRHT_ARR_LEN(output, byte_size); i++) {
     if (!i)
     {
@@ -59,11 +67,20 @@ void encrypt_string(char const *raw_string,
 
 char* decrypt_string(int16_t const *encr_string,
                      char *output,
-                     const uint8_t byte_size)
+                     const uint16_t ibuff_byte_size,
+                     const uint16_t cbuff_byte_size)
 {
   output[0] = 0;
   char c;
-  uint8_t len = _STRHT_ARR_LEN(output, byte_size);
+  uint8_t len = _STRHT_ARR_LEN(output, cbuff_byte_size);
+
+  /* Do a small sanity check on the buffers sizes */
+  if (((cbuff_byte_size - 1) *2) != ibuff_byte_size) {
+    printf("Warning,  wrongly allocated memory for decrypt buffer:"
+           " (str) %" PRIx16 ", (buf) %" PRIx16 "\n",
+           ((cbuff_byte_size - 1) *2) ,
+           ibuff_byte_size);
+  }
   for (uint8_t i=0; i<len-1; i++) {
     /* First character is directly decoded by masking the junk
     bytes and bit shifting */

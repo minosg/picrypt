@@ -33,7 +33,7 @@
 #ifndef _STRHT_USR_SALT
 #define _STRHT_USR_SALT 0x71                              ///< Obsuscation Salt
 #endif  /* Random user salt */
-#define _STRHT_ARR_LEN(a, s) ((uint8_t)(s) /sizeof(*(a))) ///< Data len for arr
+#define _STRHT_ARR_LEN(a, s) ((uint16_t)(s) /sizeof(*(a))) ///< Data len for arr
 
 #endif /* _STRHIDE_H_ */
 
@@ -44,7 +44,7 @@
  * @param serial byte_size allocated size of array in bytes.
  *
  */
-void print_array(int16_t *array, const uint8_t byte_size);
+void print_array(int16_t *array, const uint16_t byte_size);
 
 /**
  * Ecnryption function that hides a string inside a signed int array
@@ -56,7 +56,7 @@ void print_array(int16_t *array, const uint8_t byte_size);
  */
 void encrypt_string(char const *raw_string,
                     int16_t *output,
-                    const uint8_t byte_size);
+                    const uint16_t byte_size);
 
 /**
  * Decryption function that converts a signed int array back to original string
@@ -64,12 +64,15 @@ void encrypt_string(char const *raw_string,
  *
  * @param encr_string Input signed integer array.
  * @param output Pre-Allocated buffer to store the result.
- * @param byte_size Size of buffer in bytes.
+ * @param ibuff_byte_size Size of integer (encrypted) buffer in bytes.
+ * @param cbuff_byte_size Size of char buffer in bytes.
  *
+ * @return The pointer to the char buffer containing the dectypted string
  */
 char* decrypt_string(int16_t const *encr_string,
                      char *output,
-                     const uint8_t byte_size);
+                     const uint16_t ibuff_byte_size,
+                     const uint16_t cbuff_byte_size);
 
 /**
  * Compare two strings in encrypted buffers and return true if the contain the
