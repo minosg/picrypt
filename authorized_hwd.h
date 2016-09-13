@@ -12,13 +12,32 @@
  \****************************************************************************/
 /* Those fields need to be completed  by the user */
 
-#define HWD_ID "aabbccdd"                              ///< CPU_Serial
-#define MACHINE_ID "9a8d3bccfe387dae290bf94c121207bec" ///< Soft ID
+#define APP_ID "FF112233"                             ///< Applcation ID
+#define HWD_ID "aabbccdd"                             ///< CPU_Serial
+#define MACHINE_ID "4b7eaab33d5b1847a77aceb0550c3474" ///< Soft ID
 #define FILE_SEED "/etc/fstab"                         ///< File for SHA SEED
 #define FILE_SHA1 ("9b0412be89c672159deee5"\
                    "f041d9b60d24a3944f")               ///< sha of file
-#define HARWARE_SOURCE "/dev/ttyUSB0"                  ///< Port of HW dongle
-#define GODMODE 1                                      ///< Will be removed
-#define PI_VER 2                                       ///< PI Board Version
+#define HARDWARE_SOURCE "/dev/ttyUSB0"                 ///< Port of HW dongle
+#define PI_VER 3                                       ///< PI Board Version
 #define PROTECTION CARE_BEAR                           ///< Level of protection
 #define _STRHT_USR_SALT 0x01                           ///< Override String Salt
+
+/*****************************************************************************\
+ *                           Notes                                            *
+ \****************************************************************************\
+
+ * Supported Protection Levels :
+CARE_BEAR     ///< No Checks
+SCRIPT_KIDDY  ///< Only CPU Serial Check
+ARCH_USER     ///< CPU Serial and Software Check
+PEN_TESTER    ///< CPU Serial, Software, and Random File SHA
+TIN_FOIL_HAT  ///< Everything and a handrware dongle key
+
+* APP_ID and HARDWARE_SOURCE are for future changes, not used in currest state
+of code.
+
+* _STRHT_USR_SALT string obfuscation salt is not required but recommended
+to increase security. Small numbers provide higher entropy to the random data
+which is more secure. Large numbers are harder to bruteforce. Pick your caveat.
+ */
