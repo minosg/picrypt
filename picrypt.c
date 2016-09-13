@@ -77,7 +77,7 @@ char * sha1_from_en_buf(int16_t const *fname,const uint16_t byte_size, char *sha
 {
   /* Get the file path */
   char fname_d[strlen(FILE_SEED)+1];
-  decrypt_string(fname, fname_d, sizeof(fname_d));
+  decrypt_string(fname, fname_d, byte_size, sizeof(fname_d));
   return sha1_from_file(fname_d, sha_hash);
 }
 
@@ -284,10 +284,12 @@ int main(int argc, char **argv)
     printf("KeyFile:      %s\n",
             decrypt_string(file_seed_hd_e,
                            file_seed_hd_d,
+                           sizeof(file_seed_hd_e),
                            sizeof(file_seed_hd_d)));
     printf("SHA1 Key:     %s\n",
            decrypt_string(file_sha_rt_e,
                           sha_hash_rt_d,
+                          sizeof(file_sha_rt_e),
                           sizeof(sha_hash_rt_d)));
     #endif
   } else {
