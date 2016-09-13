@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
@@ -94,7 +95,7 @@ void soft_machine_id(char *ret_buff);
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-uint64_t hash(const uint64_t serial);
+uint64_t hash(const uint64_t serial, ...);
 
 /**
  * Crate a RAM_FILE containing the hash key

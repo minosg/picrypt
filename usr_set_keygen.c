@@ -18,7 +18,7 @@ the result of your method */
 #include "authorized_hwd.h"
 #include "picrypt.h"
 
-uint64_t hash(const uint64_t serial)
+uint64_t hash(const uint64_t serial, ...)
 {
   return (uint64_t)(serial);
 }
