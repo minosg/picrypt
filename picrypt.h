@@ -1,5 +1,5 @@
 /*****************************************************************************\
- * PiCrpy is a software key generator for ecryptfs locked system.             *
+ * PiCrypt is a software key generator for ecryptfs locked system.            *
  * Since the program is meant to unlock the protected area, it has to be      *
  * decrypted itself but will perform a set of  hardware tests before producing*
  * the unlock key.                                                            *
