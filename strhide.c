@@ -35,7 +35,7 @@ void encrypt_string(char const *raw_string,
   /* Do a small sanity check on the buffers sizes */
   if ((strlen(raw_string) * 2) != byte_size) {
     printf("Warning,  wrongly allocated memory for encrypt buffer:"
-           " (str) %ld, (buf) %" PRIx16 "\n",
+           " (str) %zu, (buf) %" PRIx16 "\n",
            strlen(raw_string) * 2 ,
            byte_size);
   }

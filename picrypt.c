@@ -13,7 +13,6 @@
 
 #include "authorized_hwd.h"
 #include "picrypt.h"
-#include <openssl/sha.h>
 
 /**************************\
 * Method Implementations   *
@@ -137,7 +136,13 @@ bool validate_key(char const *key)
     return false;
   }
   uint64_t ukey = (uint64_t)strtoull(key, NULL, 16);
-  uint64_t hdw_key = hash(pi_serial());
+  /* Create a temporary hardware_info structure and add the serial */
+  hwd_nfo_param_t * tmp_data = hwinfo_init();
+  hwinfo_add(tmp_data, HW_SERIAL, &ukey);
+
+  uint64_t hdw_key = hash_low(tmp_data);
+  /* Free the memory */
+  hwinfo_dealloc(tmp_data);
 
   if (ukey == hdw_key) {
     return true;

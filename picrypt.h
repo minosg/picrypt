@@ -16,12 +16,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <openssl/sha.h>
 #include "strhide.h"
+#include "hwinfo.h"
 
 #define __STDC_FORMAT_MACROS
 #define CPU_SER_SIZE    8                 ///< Len of serial in Bytes
@@ -41,7 +42,7 @@
    Enums
 ************************/
 /**
- * Locl Levels
+ * Lock Levels
  */
 typedef enum lock_level {
   CARE_BEAR     = 0, ///< No Checks
@@ -58,6 +59,7 @@ typedef enum ret_status {
   SUCESS = 0, ///< successfull return
   FAIL   = 1, ///< error
 } ret_status_t;
+
 
 /************************
    Method Declarations
@@ -95,7 +97,7 @@ void soft_machine_id(char *ret_buff);
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-uint64_t hash(const uint64_t serial, ...);
+uint64_t hash_low(hwd_nfo_param_t * hwinfo);
 
 /**
  * Crate a RAM_FILE containing the hash key
@@ -143,6 +145,5 @@ char * sha1_from_en_buf(int16_t const *fname, const uint16_t byte_size, char *sh
  * @return The sha_buff pointer.
  */
 int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,const uint16_t byte_size, int16_t *sha_buff);
-
 
 #endif /* _PICRYPT_H_ */

@@ -13,19 +13,25 @@
 
 #include "authorized_hwd.h"
 #include "picrypt.h"
-#include <openssl/sha.h>
 
 int main(int argc, char **argv)
 {
   bool permitted = true;
+  hwd_nfo_param_t * hardware_info = hwinfo_init();
+  uint64_t hash_key =0 ;
   #ifdef HWD_ID
   uint64_t serial = pi_serial();
-  uint64_t hash_key = hash(serial);
+  //uint64_t serial =1421114121;
   uint64_t permitted_serial = (uint64_t)strtoull(HWD_ID, NULL, 16);
+
+  /* Add the data to the hw_info structure */
+  hwinfo_add(hardware_info, HW_SERIAL, &serial);
+
   if ((PROTECTION >= SCRIPT_KIDDY) && (permitted_serial != serial)) {
     printf("Serial Miss-Match!! \n");
     permitted = false;
   }
+
   #endif
   #ifdef MACHINE_ID
   /* Allocate buffers */
@@ -35,6 +41,9 @@ int main(int argc, char **argv)
   /* Exctact Current Machine ID (not sensitive) */
   char machine_id_hd_d[MACHINE_ID_SIZE + 1];
   soft_machine_id(machine_id_hd_d);
+
+  /* Add the machine-id to the hw_info structure */
+  hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_hd_d);
 
   encrypt_string(MACHINE_ID, machine_id_hd_e, sizeof(machine_id_hd_e));
   encrypt_string(machine_id_hd_d, machine_id_rt_e, sizeof(machine_id_rt_e));
@@ -72,6 +81,13 @@ int main(int argc, char **argv)
                               sizeof(file_seed_hd_e),
                               file_sha_rt_e);
 
+  /* Add the sha1 to the hw_info structure */
+  decrypt_string(file_sha_rt_e,
+                 sha_hash_rt_d,
+                 sizeof(file_sha_rt_e),
+                 sizeof(sha_hash_rt_d));
+  hwinfo_add(hardware_info, HW_SHA1, sha_hash_rt_d);
+
   if (PROTECTION >= PEN_TESTER) {
     if (!compare_encrypted_str(file_sha_rt_e,
                                file_sha_hd_e,
@@ -90,13 +106,15 @@ int main(int argc, char **argv)
     printf("This is the password you are looking for...\n"
            "( You pesky pirate !!! )\n");
     exit(1);
+  } else {
+    hash_key = hash_low(hardware_info);
   }
 
   if (argc == 1) {
     help(argv[0]);
   #ifdef HWD_ID
   } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    ram_key(hash(serial));
+    ram_key(hash_key);
     printf("%" PRIx64 "\n", hash_key);
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
     printf("%" PRIx64 "\n", hash_key);
@@ -112,13 +130,14 @@ int main(int argc, char **argv)
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
-    printf("Serial (i): %" PRIu64 "\nSerial (0x): %" PRIx64 " \n",
+    printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
            serial,
            serial);
     printf("Hash Key:     %" PRIx64 "\n", hash_key);
     #endif
     #ifdef MACHINE_ID
-    printf("Machine-id:   %s\n",machine_id_hd_d);
+    printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(hardware_info,
+                                                      HW_MACHINE_ID));
     #endif
     #if defined(FILE_SEED) && defined(FILE_SHA1)
     printf("KeyFile:      %s\n",
@@ -126,11 +145,8 @@ int main(int argc, char **argv)
                            file_seed_hd_d,
                            sizeof(file_seed_hd_e),
                            sizeof(file_seed_hd_d)));
-    printf("SHA1 Key:     %s\n",
-           decrypt_string(file_sha_rt_e,
-                          sha_hash_rt_d,
-                          sizeof(file_sha_rt_e),
-                          sizeof(sha_hash_rt_d)));
+    printf("SHA1 Key:     %s\n", (char *)hwinfo_get_pl(hardware_info,HW_SHA1));
+
     #endif
   } else {
     help(argv[0]);

@@ -18,7 +18,12 @@ the result of your method */
 #include "authorized_hwd.h"
 #include "picrypt.h"
 
-uint64_t hash(const uint64_t serial, ...)
+uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 {
-  return (uint64_t)(serial);
+  /* Uncomment any of the fields that you need to calcuate the hash key
+  const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
+  const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
+  const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
+  */
+  return (uint64_t)(1);
 }
