@@ -18,6 +18,7 @@
 * Method Implementations   *
 \**************************/
 
+/* Get the CPU serial and convert it to an integer */
 uint64_t pi_serial()
 {
   char ser_buffer[CPU_SER_SIZE+1];
@@ -25,6 +26,7 @@ uint64_t pi_serial()
   return (uint64_t)strtoull(ser_buffer, NULL, 16);
 }
 
+/* Open a file and read a substring into a buffer */
 void string_slice_from_file(char const *fname,
                             const uint32_t offset,
                             const uint32_t byte_size,
@@ -53,7 +55,9 @@ void soft_machine_id(char *ret_buff)
   string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
   return;
 }
+#if defined(FILE_SEED) && defined(FILE_SHA1)
 
+/* Calcualte SHA1 from a valid file path */
 char * sha1_from_file(char * fname, char *sha_hash)
 {
   FILE *fptr;
@@ -93,9 +97,10 @@ char * sha1_from_file(char * fname, char *sha_hash)
   free(fbuffer);
   return sha_hash;
 }
-
-#if defined(FILE_SEED) && defined(FILE_SHA1)
-char * sha1_from_en_buf(int16_t const *fname,const uint16_t byte_size, char *sha_hash)
+/* Calculate SHA1 from a file path that is encryted using strhide */
+char * sha1_from_en_buf(int16_t const *fname,
+                        const uint16_t byte_size,
+                        char *sha_hash)
 {
   /* Get the file path */
   char fname_d[strlen(FILE_SEED)+1];
@@ -103,6 +108,8 @@ char * sha1_from_en_buf(int16_t const *fname,const uint16_t byte_size, char *sha
   return sha1_from_file(fname_d, sha_hash);
 }
 
+/* Calculate SHA1 from a file path that is encryted using strhide and return
+it using the same encryption */
 int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
                                      const uint16_t byte_size,
                                      int16_t *sha_buff)
@@ -131,7 +138,9 @@ char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
 }
 
 /* Return the hash in printable string format (Do not edit) */
-int16_t * hash_enc(hwd_nfo_param_t * hwinfo, int16_t * hash_buffer_e, const uint16_t byte_size)
+int16_t * hash_enc(hwd_nfo_param_t * hwinfo,
+                   int16_t * hash_buffer_e,
+                   const uint16_t byte_size)
 {
   char tmp_hash_bf[HBUFF_SZ+1];
   hash_str(hwinfo, tmp_hash_bf);
@@ -152,8 +161,11 @@ void ram_key(const char * hash_key)
   sprintf(key_text, "passphrase_passwd=%s", hash_key);
   fprintf(fptr,"%s\n",key_text);
   fclose(fptr);
+  /* Change permissions to read only for owner only (root) */
+  chmod(RAM_FILE, S_IRUSR);
 }
 
+/* verify that a key is valid for this hardware */
 bool validate_key(char const *key)
 {
   if (strlen(key) > 8) {
@@ -175,8 +187,7 @@ bool validate_key(char const *key)
   }
 }
 
-
-
+/* Diplay a help menu */
 void help(const char* prgm)
 {
   printf("<---------------------- Options -------------------------------->\n");

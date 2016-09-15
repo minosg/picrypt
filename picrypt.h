@@ -18,9 +18,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <sys/stat.h>
 #include <openssl/sha.h>
+
 #include "strhide.h"
 #include "hwinfo.h"
 
