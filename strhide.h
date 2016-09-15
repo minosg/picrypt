@@ -35,6 +35,11 @@
 #endif  /* Random user salt */
 #define _STRHT_ARR_LEN(a, s) ((uint16_t)(s) /sizeof(*(a))) ///< Data len for arr
 
+/* Helper macros. DO NOT USE when input arguments are pointers */
+#define _STRHT_DECRPT_(e, d) decrypt_string((e),(d),sizeof((e)),sizeof((d)))
+#define _STRHT_ENCRPT_(s, e) encrypt_string((s),(e),sizeof((e)))
+#define _STRHT_CMP_(a, b) compare_encrypted_str((a),(b),sizeof((a)),sizeof((b)))
+
 #endif /* _STRHIDE_H_ */
 
 /**

@@ -20,6 +20,7 @@ int main(int argc, char **argv)
   hwd_nfo_param_t * hardware_info = hwinfo_init();
   char hash_key_d[HBUFF_SZ+1];
   int16_t hash_key_e[HBUFF_SZ];
+
   #ifdef HWD_ID
   /* Allow the user to override the detected CPU serial */
   #ifndef FAKE_SERIAL
@@ -50,14 +51,11 @@ int main(int argc, char **argv)
   /* Add the machine-id to the hw_info structure */
   hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_hd_d);
 
-  encrypt_string(MACHINE_ID, machine_id_hd_e, sizeof(machine_id_hd_e));
-  encrypt_string(machine_id_hd_d, machine_id_rt_e, sizeof(machine_id_rt_e));
+  _STRHT_ENCRPT_(MACHINE_ID, machine_id_hd_e);
+  _STRHT_ENCRPT_(machine_id_hd_d, machine_id_rt_e);
 
   if (PROTECTION >= ARCH_USER) {
-    if (!compare_encrypted_str(machine_id_rt_e,
-                               machine_id_hd_e,
-                               sizeof(machine_id_rt_e),
-                               sizeof(machine_id_hd_e))) {
+    if (!_STRHT_CMP_(machine_id_rt_e, machine_id_hd_e)) {
       printf("Machine ID Miss Match!! \n");
       permitted = false;
     }
@@ -80,24 +78,19 @@ int main(int argc, char **argv)
   char file_seed_hd_d[strlen(FILE_SEED)+1];
 
   /* Store the sensitive information */
-  encrypt_string(FILE_SEED, file_seed_hd_e, sizeof(file_seed_hd_e));
-  encrypt_string(FILE_SHA1, file_sha_hd_e, sizeof(file_sha_hd_e));
+  _STRHT_ENCRPT_(FILE_SEED, file_seed_hd_e);
+  _STRHT_ENCRPT_(FILE_SHA1, file_sha_hd_e);
   sha1_from_en_buf_to_en_buff(file_seed_hd_e,
                               sizeof(file_seed_hd_e),
                               file_sha_rt_e);
 
   /* Add the sha1 to the hw_info structure */
-  decrypt_string(file_sha_rt_e,
-                 sha_hash_rt_d,
-                 sizeof(file_sha_rt_e),
-                 sizeof(sha_hash_rt_d));
+  _STRHT_DECRPT_(file_sha_rt_e, sha_hash_rt_d);
+
   hwinfo_add(hardware_info, HW_SHA1, sha_hash_rt_d);
 
   if (PROTECTION >= PEN_TESTER) {
-    if (!compare_encrypted_str(file_sha_rt_e,
-                               file_sha_hd_e,
-                               sizeof(file_sha_rt_e),
-                               sizeof(file_sha_hd_e))) {
+    if (!_STRHT_CMP_(file_sha_rt_e,file_sha_hd_e)) {
       printf("SHA1 Miss-Match!! \n");
       permitted = false;
     }
@@ -120,14 +113,10 @@ int main(int argc, char **argv)
     help(argv[0]);
   #ifdef HWD_ID
   } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    char *key = decrypt_string(hash_key_e,
-                   hash_key_d,
-                   sizeof(hash_key_e),
-                   sizeof(hash_key_d));
-    ram_key(key);
-    printf("%s\n", key);
+    ram_key(_STRHT_DECRPT_(hash_key_e, hash_key_d));
+    printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
-    printf("%s\n", hash_key_d);
+    printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
     if (validate_key(argv[2])) {
       printf("Key %s is Valid\n", argv[2]);
@@ -141,28 +130,19 @@ int main(int argc, char **argv)
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
 
-    ram_key(decrypt_string(hash_key_e,
-                           hash_key_d,
-                           sizeof(hash_key_e),
-                           sizeof(hash_key_d)));
+    ram_key(_STRHT_DECRPT_(hash_key_e, hash_key_d));
     printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
            serial,
            serial);
-    printf("Hash Key:     %s\n", decrypt_string(hash_key_e,
-                                 hash_key_d,
-                                 sizeof(hash_key_e),
-                                 sizeof(hash_key_d)));
+    printf("Hash Key:     %s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
     #endif
     #ifdef MACHINE_ID
     printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(hardware_info,
                                                       HW_MACHINE_ID));
     #endif
     #if defined(FILE_SEED) && defined(FILE_SHA1)
-    printf("KeyFile:      %s\n",
-            decrypt_string(file_seed_hd_e,
-                           file_seed_hd_d,
-                           sizeof(file_seed_hd_e),
-                           sizeof(file_seed_hd_d)));
+    printf("KeyFile:      %s\n", _STRHT_DECRPT_(file_seed_hd_e,
+                                                file_seed_hd_d));
     printf("SHA1 Key:     %s\n", (char *)hwinfo_get_pl(hardware_info,HW_SHA1));
 
     #endif
