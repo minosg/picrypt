@@ -24,7 +24,15 @@
 
 #define _STRHT_USR_SALT 0x01                          ///< Override String Salt
 
+/* Special definitions  */
 #define FAKE_SERIAL     0xaabbccdd                    ///< (Devel) Fake serial
+//#define LONG_HASH                                   ///< 2x the passwd length
+
+#ifdef LONG_HASH
+  #define HBUFF_SZ 16
+#else
+  #define HBUFF_SZ 8
+#endif
 /*****************************************************************************\
  *                           Notes                                            *
  \****************************************************************************\

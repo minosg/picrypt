@@ -18,9 +18,8 @@ int main(int argc, char **argv)
 {
   bool permitted = true;
   hwd_nfo_param_t * hardware_info = hwinfo_init();
-  uint64_t hash_key =0 ;
+  char hash_key_d[HBUFF_SZ+1];
   #ifdef HWD_ID
-
   /* Allow the user to override the detected CPU serial */
   #ifndef FAKE_SERIAL
   uint64_t serial = pi_serial();
@@ -37,7 +36,6 @@ int main(int argc, char **argv)
     printf("Serial Miss-Match!! \n");
     permitted = false;
   }
-
   #endif
   #ifdef MACHINE_ID
   /* Allocate buffers */
@@ -113,17 +111,19 @@ int main(int argc, char **argv)
            "( You pesky pirate !!! )\n");
     exit(1);
   } else {
-    hash_key = hash_low(hardware_info);
+    hash_key[0] = hash_low(hardware_info);
+    printf("DEBUG: %s\n",hash_str(hardware_info, hash_key_d));
+
   }
 
   if (argc == 1) {
     help(argv[0]);
   #ifdef HWD_ID
   } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    ram_key(hash_key);
-    printf("%" PRIx64 "\n", hash_key);
+    ram_key(hash_key_d);
+    printf("%s\n", hash_key_d);
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
-    printf("%" PRIx64 "\n", hash_key);
+    printf("%s\n", hash_key_d);
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
     if (validate_key(argv[2])) {
       printf("Key %s is Valid\n", argv[2]);
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
            serial,
            serial);
-    printf("Hash Key:     %" PRIx64 "\n", hash_key);
+    printf("Hash Key:     %s\n", hash_key_d);
     #endif
     #ifdef MACHINE_ID
     printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(hardware_info,

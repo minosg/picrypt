@@ -115,7 +115,7 @@ void soft_machine_id(char *ret_buff)
   return;
 }
 
-void ram_key(const uint64_t hash_key)
+void ram_key(const char * hash_key)
 {
   FILE *fptr;
   fptr=fopen(RAM_FILE,"w");
@@ -124,8 +124,8 @@ void ram_key(const uint64_t hash_key)
     exit(1);
   }
 
-  char key_text[28];
-  sprintf(key_text, "passphrase_passwd=%" PRIx64 "", hash_key);
+  char key_text[36];
+  sprintf(key_text, "passphrase_passwd=%s", hash_key);
   fprintf(fptr,"%s\n",key_text);
   fclose(fptr);
 }

@@ -18,6 +18,7 @@ the result of your method */
 #include "authorized_hwd.h"
 #include "picrypt.h"
 
+/* Calculate the low bits of the hash */
 uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 {
   /* Uncomment any of the fields that you need to calcuate the hash key
@@ -26,4 +27,22 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo)
   const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
   */
   return (uint64_t)(1);
+}
+
+/* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
+uint64_t hash_high(hwd_nfo_param_t * hwinfo){
+  return (uint64_t)(2);
+}
+
+/* Return the hash in printable string format (Do not edit) */
+char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
+{
+  uint64_t LB = hash_low(hwinfo);
+  #ifdef LONG_HASH
+  uint64_t HB = hash_high(hwinfo);
+  snprintf(hash_buffer, HBUFF_SZ, "%08" PRIx64 "%08" PRIx64 "", HB, LB);
+  #else
+  snprintf(hash_buffer, HBUFF_SZ, "%08" PRIx64 "", LB);
+  #endif
+  return hash_buffer;
 }

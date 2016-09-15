@@ -91,7 +91,7 @@ void string_slice_from_file(char const *fname,
 void soft_machine_id(char *ret_buff);
 
 /**
- * User Key generation Routine
+ * User Key generation Routine for the low bits of the hash
  *
  * @param serial integer represenation of the PI CPU Serial Number.
  *
@@ -100,12 +100,31 @@ void soft_machine_id(char *ret_buff);
 uint64_t hash_low(hwd_nfo_param_t * hwinfo);
 
 /**
+ * User Key generation Routine for the high bits of the hash
+ *
+ * @param serial integer represenation of the PI CPU Serial Number.
+ *
+ * @return 64Bit Unsigned Integer for the encryption key
+ */
+uint64_t hash_high(hwd_nfo_param_t * hwinfo);
+
+/**
+ * User Key generation Routine that returns a string containing the hash
+ *
+ * @param serial integer represenation of the PI CPU Serial Number.
+ *
+ * @return 64Bit Unsigned Integer for the encryption key
+ */
+char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
+
+/**
  * Crate a RAM_FILE containing the hash key
  *
  * @param hash_key Integer representation of the calculated haskhed password.
  *
  */
-void ram_key(const uint64_t hash_key);
+
+void ram_key(const char * hash_key);
 
 /**
  * Check a hash againist the calcuated hardware hash
