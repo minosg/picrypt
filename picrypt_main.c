@@ -19,6 +19,7 @@ int main(int argc, char **argv)
   bool permitted = true;
   hwd_nfo_param_t * hardware_info = hwinfo_init();
   char hash_key_d[HBUFF_SZ+1];
+  int16_t hash_key_e[HBUFF_SZ];
   #ifdef HWD_ID
   /* Allow the user to override the detected CPU serial */
   #ifndef FAKE_SERIAL
@@ -111,17 +112,20 @@ int main(int argc, char **argv)
            "( You pesky pirate !!! )\n");
     exit(1);
   } else {
-    hash_key[0] = hash_low(hardware_info);
-    printf("DEBUG: %s\n",hash_str(hardware_info, hash_key_d));
-
+    //printf("DEBUG: %s\n",hash_str(hardware_info, hash_key_d));
+    hash_enc(hardware_info, hash_key_e, sizeof(hash_key_e));
   }
 
   if (argc == 1) {
     help(argv[0]);
   #ifdef HWD_ID
   } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    ram_key(hash_key_d);
-    printf("%s\n", hash_key_d);
+    char *key = decrypt_string(hash_key_e,
+                   hash_key_d,
+                   sizeof(hash_key_e),
+                   sizeof(hash_key_d));
+    ram_key(key);
+    printf("%s\n", key);
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
     printf("%s\n", hash_key_d);
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
@@ -136,10 +140,18 @@ int main(int argc, char **argv)
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
+
+    ram_key(decrypt_string(hash_key_e,
+                           hash_key_d,
+                           sizeof(hash_key_e),
+                           sizeof(hash_key_d)));
     printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
            serial,
            serial);
-    printf("Hash Key:     %s\n", hash_key_d);
+    printf("Hash Key:     %s\n", decrypt_string(hash_key_e,
+                                 hash_key_d,
+                                 sizeof(hash_key_e),
+                                 sizeof(hash_key_d)));
     #endif
     #ifdef MACHINE_ID
     printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(hardware_info,

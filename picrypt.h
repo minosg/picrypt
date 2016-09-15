@@ -93,7 +93,7 @@ void soft_machine_id(char *ret_buff);
 /**
  * User Key generation Routine for the low bits of the hash
  *
- * @param serial integer represenation of the PI CPU Serial Number.
+ * @param hwinfo Data structure containing variable hardware information.
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
@@ -102,7 +102,7 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo);
 /**
  * User Key generation Routine for the high bits of the hash
  *
- * @param serial integer represenation of the PI CPU Serial Number.
+ * @param hwinfo Data structure containing variable hardware information.
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
@@ -111,11 +111,23 @@ uint64_t hash_high(hwd_nfo_param_t * hwinfo);
 /**
  * User Key generation Routine that returns a string containing the hash
  *
- * @param serial integer represenation of the PI CPU Serial Number.
+ * @param hwinfo Data structure containing variable hardware information.
+ * @param hash_buffer char buffer to store the hash.
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
 char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
+
+/**
+ * User Key generation Routine that returns a pointer to the encrypted buffer
+ * containing the hash
+ *
+ * @param hwinfo Data structure containing variable hardware information.
+ * @param hash_buffer Integer buffer to store the hash in encrypted format.
+ *
+ * @return uint16_t Pointer to buffer,
+ */
+int16_t * hash_enc(hwd_nfo_param_t * hwinfo, int16_t * hash_buffer_e,  const uint16_t byte_size);
 
 /**
  * Crate a RAM_FILE containing the hash key
