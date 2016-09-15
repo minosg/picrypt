@@ -8,7 +8,7 @@
  * Email: minos197@gmail.com                                                  *
  * License: GPL v3.0                                                          *
  * Project: PiCrypt                                                           *
- * File Description: Custom User locking routine                              *
+ * File Description: Custom User locking routines                             *
  \****************************************************************************/
 
 /* Change the method of calculating the key to YOUR OWN CUSTOM and UNIQUE
@@ -32,26 +32,4 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 /* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
 uint64_t hash_high(hwd_nfo_param_t * hwinfo){
   return (uint64_t)(2);
-}
-
-/* Return the hash in printable string format (Do not edit) */
-char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
-{
-  uint64_t LB = hash_low(hwinfo);
-  #ifdef LONG_HASH
-  uint64_t HB = hash_high(hwinfo);
-  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "%08" PRIx64 "", HB, LB);
-  #else
-  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "", LB);
-  #endif
-  return hash_buffer;
-}
-
-/* Return the hash in printable string format (Do not edit) */
-int16_t * hash_enc(hwd_nfo_param_t * hwinfo, int16_t * hash_buffer_e, const uint16_t byte_size)
-{
-  char tmp_hash_bf[HBUFF_SZ+1];
-  hash_str(hwinfo, tmp_hash_bf);
-  encrypt_string(tmp_hash_bf, hash_buffer_e, byte_size);
-  return hash_buffer_e;
 }

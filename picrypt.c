@@ -17,6 +17,43 @@
 /**************************\
 * Method Implementations   *
 \**************************/
+
+uint64_t pi_serial()
+{
+  char ser_buffer[CPU_SER_SIZE+1];
+  string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, ser_buffer);
+  return (uint64_t)strtoull(ser_buffer, NULL, 16);
+}
+
+void string_slice_from_file(char const *fname,
+                            const uint32_t offset,
+                            const uint32_t byte_size,
+                            char *buffer)
+{
+  FILE *fptr;
+  // Open the file
+  fptr=fopen(fname, "r");
+  if(fptr==NULL) {
+    printf("Error Opening File!");
+    exit(1);
+  }
+  if (offset) {
+    // Go to offset where the serial number is stored
+    fseek(fptr, offset, SEEK_SET);
+  }
+  /* Read the data from the file into the string */
+  fgets(buffer, byte_size+1, fptr);
+  fclose(fptr);
+  return;
+}
+
+/* Copy the software machine id string from file to an initialized buffer */
+void soft_machine_id(char *ret_buff)
+{
+  string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
+  return;
+}
+
 char * sha1_from_file(char * fname, char *sha_hash)
 {
   FILE *fptr;
@@ -80,39 +117,26 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
 }
 #endif
 
-void string_slice_from_file(char const *fname,
-                            const uint32_t offset,
-                            const uint32_t byte_size,
-                            char *buffer)
+/* Return the hash in printable string format (Do not edit) */
+char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
 {
-  FILE *fptr;
-  // Open the file
-  fptr=fopen(fname, "r");
-  if(fptr==NULL) {
-    printf("Error Opening File!");
-    exit(1);
-  }
-  if (offset) {
-    // Go to offset where the serial number is stored
-    fseek(fptr, offset, SEEK_SET);
-  }
-  /* Read the data from the file into the string */
-  fgets(buffer, byte_size+1, fptr);
-  fclose(fptr);
-  return;
+  uint64_t LB = hash_low(hwinfo);
+  #ifdef LONG_HASH
+  uint64_t HB = hash_high(hwinfo);
+  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "%08" PRIx64 "", HB, LB);
+  #else
+  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "", LB);
+  #endif
+  return hash_buffer;
 }
 
-uint64_t pi_serial()
+/* Return the hash in printable string format (Do not edit) */
+int16_t * hash_enc(hwd_nfo_param_t * hwinfo, int16_t * hash_buffer_e, const uint16_t byte_size)
 {
-  char ser_buffer[CPU_SER_SIZE+1];
-  string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, ser_buffer);
-  return (uint64_t)strtoull(ser_buffer, NULL, 16);
-}
-
-void soft_machine_id(char *ret_buff)
-{
-  string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
-  return;
+  char tmp_hash_bf[HBUFF_SZ+1];
+  hash_str(hwinfo, tmp_hash_bf);
+  encrypt_string(tmp_hash_bf, hash_buffer_e, byte_size);
+  return hash_buffer_e;
 }
 
 void ram_key(const char * hash_key)
@@ -150,6 +174,8 @@ bool validate_key(char const *key)
     return false;
   }
 }
+
+
 
 void help(const char* prgm)
 {

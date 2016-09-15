@@ -86,27 +86,49 @@ void string_slice_from_file(char const *fname,
                             const uint32_t offset,
                             const uint32_t len,
                             char *buffer);
-
-/* Copy the software machine id string from file to an initialized buffer */
+/**
+ * Copies a the machine id from OS to a buffer
+ *
+ * @param ret_buff Pre-initialized buffer to copy the machine id into
+ *
+ */
 void soft_machine_id(char *ret_buff);
 
 /**
- * User Key generation Routine for the low bits of the hash
+ * Generate sha1 hash from string input file path
  *
- * @param hwinfo Data structure containing variable hardware information.
+ * @param fname char* buffer that the plain text path is stored.
+ * @param string buffer to store the sha1 string.
  *
- * @return 64Bit Unsigned Integer for the encryption key
+ * @return pointer to storage string buffer.
  */
-uint64_t hash_low(hwd_nfo_param_t * hwinfo);
+char * sha1_from_file(char * fname, char *sha_hash);
 
 /**
- * User Key generation Routine for the high bits of the hash
+ * Generate sha1 hash from filename that is stored in a strhide encoded buffer
  *
- * @param hwinfo Data structure containing variable hardware information.
+ * @param fname int16_t buffer that the encrypted path is stored.
+ * @param byte_size Integer size of the buffer in bytes.
+ * @param sha_hash buffer to store the sha1 string.
  *
- * @return 64Bit Unsigned Integer for the encryption key
+ * @return sha1 string.
  */
-uint64_t hash_high(hwd_nfo_param_t * hwinfo);
+char * sha1_from_en_buf(int16_t const *fname,
+                        const uint16_t byte_size,
+                        char *sha_hash);
+
+/**
+ * Check a hash againist the calcuated hardware hash
+ *
+ * @param fname int16_t buffer that the encrypted path is stored.
+ * @param byte_size Integer size of the buffer in bytes.
+ * @param sha_buff Output buffer to store the sha1 string in ecnrypted format.
+ *
+ * @return The sha_buff pointer.
+ */
+int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
+                                      const uint16_t byte_size,
+                                      int16_t *sha_buff);
 
 /**
  * User Key generation Routine that returns a string containing the hash
@@ -127,7 +149,9 @@ char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
  *
  * @return uint16_t Pointer to buffer,
  */
-int16_t * hash_enc(hwd_nfo_param_t * hwinfo, int16_t * hash_buffer_e,  const uint16_t byte_size);
+int16_t * hash_enc(hwd_nfo_param_t * hwinfo,
+                   int16_t * hash_buffer_e,
+                   const uint16_t byte_size);
 
 /**
  * Crate a RAM_FILE containing the hash key
@@ -145,6 +169,7 @@ void ram_key(const char * hash_key);
  *
  * @return True if key matches
  */
+
 bool validate_key(char const *key);
 
 /**
@@ -153,28 +178,26 @@ bool validate_key(char const *key);
  * @param serial integer represenation of the PI CPU Serial Number.
  *
  */
+
 void help(const char* prgm);
 
-/**
- * Generate sha1 hash from filename that is stored in a strhide encoded buffer
- *
- * @param fname int16_t buffer that the encrypted path is stored.
- * @param byte_size Integer size of the buffer in bytes.
- * @param sha_hash buffer to store the sha1 string.
- *
- * @return sha1 string.
- */
-char * sha1_from_en_buf(int16_t const *fname, const uint16_t byte_size, char *sha_hash);
 
 /**
- * Check a hash againist the calcuated hardware hash
+ * User Key generation Routine for the low bits of the hash
  *
- * @param fname int16_t buffer that the encrypted path is stored.
- * @param byte_size Integer size of the buffer in bytes.
- * @param sha_buff Output buffer to store the sha1 string in ecnrypted format.
+ * @param hwinfo Data structure containing variable hardware information.
  *
- * @return The sha_buff pointer.
+ * @return 64Bit Unsigned Integer for the encryption key
  */
-int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,const uint16_t byte_size, int16_t *sha_buff);
+uint64_t hash_low(hwd_nfo_param_t * hwinfo);
+
+/**
+ * User Key generation Routine for the high bits of the hash
+ *
+ * @param hwinfo Data structure containing variable hardware information.
+ *
+ * @return 64Bit Unsigned Integer for the encryption key
+ */
+uint64_t hash_high(hwd_nfo_param_t * hwinfo);
 
 #endif /* _PICRYPT_H_ */
