@@ -20,8 +20,14 @@ int main(int argc, char **argv)
   hwd_nfo_param_t * hardware_info = hwinfo_init();
   uint64_t hash_key =0 ;
   #ifdef HWD_ID
+
+  /* Allow the user to override the detected CPU serial */
+  #ifndef FAKE_SERIAL
   uint64_t serial = pi_serial();
-  //uint64_t serial =1421114121;
+  #else
+  uint64_t serial = (uint64_t)FAKE_SERIAL;
+  #endif
+
   uint64_t permitted_serial = (uint64_t)strtoull(HWD_ID, NULL, 16);
 
   /* Add the data to the hw_info structure */

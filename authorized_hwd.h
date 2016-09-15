@@ -12,17 +12,19 @@
  \****************************************************************************/
 /* Those fields need to be completed  by the user */
 
-#define APP_ID "FF112233"                             ///< Applcation ID
-#define HWD_ID "aabbccdd"                             ///< CPU_Serial
+#define APP_ID     "FF112233"                         ///< Applcation ID
+#define HWD_ID     "aabbccdd"                         ///< CPU_Serial
 #define MACHINE_ID "4b7eaab33d5b1847a77aceb0550c3474" ///< Soft ID
-#define FILE_SEED "/etc/fstab"                         ///< File for SHA SEED
-#define FILE_SHA1 ("9b0412be89c672159deee5"\
-                   "f041d9b60d24a3944f")               ///< sha of file
-#define HARDWARE_SOURCE "/dev/ttyUSB0"                 ///< Port of HW dongle
-#define PI_VER 3                                       ///< PI Board Version
-#define PROTECTION CARE_BEAR                           ///< Level of protection
-#define _STRHT_USR_SALT 0x01                           ///< Override String Salt
+#define FILE_SEED  "/etc/fstab"                       ///< File for SHA SEED
+#define FILE_SHA1  ("9b0412be89c672159deee5"\
+                    "f041d9b60d24a3944f")             ///< sha of file
+#define HWD_SRC     "/dev/ttyUSB0"                    ///< Port of HW dongle
+#define PI_VER     3                                  ///< PI Board Version
+#define PROTECTION CARE_BEAR                          ///< Level of protection
 
+#define _STRHT_USR_SALT 0x01                          ///< Override String Salt
+
+#define FAKE_SERIAL     0xaabbccdd                    ///< (Devel) Fake serial
 /*****************************************************************************\
  *                           Notes                                            *
  \****************************************************************************\
