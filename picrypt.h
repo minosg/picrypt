@@ -40,6 +40,13 @@
     #define CPU_SER_OFFSET  1127
 #endif
 
+#ifdef LONG_HASH
+  #define HBUFF_SZ 16
+#else
+  #define HBUFF_SZ 8
+#endif
+
+
 /************************
    Enums
 ************************/
