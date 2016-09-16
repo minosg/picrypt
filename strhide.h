@@ -20,6 +20,7 @@
 
 #ifndef _STRHIDE_H_
 #define _STRHIDE_H_
+#define _POSIX_C_SOURCE  200811L
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <time.h>
+
+/* Allows the following project file to override the salt */
+#include "authorized_hwd.h"
 
 #define _STRHT_FIRST_CHAR 0x21                            ///< ! character
 #ifndef _STRHT_USR_SALT
@@ -40,7 +44,6 @@
 #define _STRHT_ENCRPT_(s, e) encrypt_string((s),(e),sizeof((e)))
 #define _STRHT_CMP_(a, b) compare_encrypted_str((a),(b),sizeof((a)),sizeof((b)))
 #define _STRHT_ARR2HDR_(a, h) array_to_header((a),sizeof((a)),(h))
-#endif /* _STRHIDE_H_ */
 
 /**
  * Print byte contents of array
@@ -105,3 +108,14 @@ bool compare_encrypted_str(int16_t *en_str_one,
                          int16_t *en_str_two,
                          const uint16_t bsize_str_one,
                          const uint16_t bsize_str_two);
+
+/**
+* Open a gcc .h header file and replace all occurences of hash defined strings
+* with their equivalent encrypted buffer values
+*
+* @param fname_in Input header file.
+* @param fname_out File to be created after the modification.
+*
+*/
+void parse_header(char const *fname_in, char const *fname_out);
+#endif /* _STRHIDE_H_ */

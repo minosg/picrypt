@@ -20,6 +20,7 @@
 
 #include "strhide.h"
 
+/* Print buffer contents in human readable format */
 void print_array(int16_t *array, const uint16_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
@@ -31,8 +32,7 @@ char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
 {
   uint16_t idx = 1;
 
-  uint8_t x = snprintf (r_buff, 2, "{");
-
+  snprintf (r_buff, 2, "{");
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
     /* Do not put comma in first entry*/
     if (i==0)  {
@@ -43,11 +43,11 @@ char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
     }
     idx=idx+7;
   }
-
   snprintf (r_buff+idx, 2, "}");
   return r_buff;
 }
 
+/* Encrypt a string to a Pre-Allocated buffer */
 void encrypt_string(char const *raw_string,
                     int16_t *output,
                     const uint16_t byte_size)
@@ -86,6 +86,7 @@ void encrypt_string(char const *raw_string,
   return;
 }
 
+/* Decrypt a string to a Pre-Allocated buffer */
 char* decrypt_string(int16_t const *encr_string,
                      char *output,
                      const uint16_t ibuff_byte_size,
@@ -132,4 +133,100 @@ bool compare_encrypted_str(int16_t *en_str_one,
     if ((en_str_one[i] & 0x0FF0) != (en_str_two[i] & 0x0FF0)) ret = false;
   }
   return ret;
+}
+
+/* Open a header file and encrtypt all string hash defines */
+void parse_header(char const *fname_in, char const *fname_out)
+{
+  char * line = NULL;
+  char hashdef[8];
+  size_t len = 0;
+  size_t read;
+  FILE *in_file;
+  FILE *out_file;
+
+  // Open the file
+  in_file=fopen(fname_in, "r");
+  if(in_file==NULL) {
+    printf("Error Opening Input File %s!\n", fname_in);
+    exit(1);
+  }
+  remove(fname_out);
+  out_file= fopen(fname_out, "a");
+  if (out_file == NULL)
+  {
+      printf("Error Opening Ouptut File %s!\n", fname_out);
+      exit(1);
+  }
+  uint16_t idx = 0;
+  uint16_t qte_str = 0;
+  uint16_t qte_end = 0;
+  while ((read = getline(&line, &len, in_file))!= -1) {
+
+      memset(hashdef, 0, 8);
+      qte_str = 0;
+      qte_end = 0;
+
+      snprintf (hashdef, 8, "%s", line+idx );
+      /* Detect if that is a define line */
+      if (!strcmp("#define", hashdef)) {
+
+        /* Iterate through the letters of the define */
+        for( uint16_t i = idx+8; i < read-1; i++ ) {
+          /* Locate the quote marks*/
+          if ( 0x22 == line[i] && (!qte_str)) {
+            qte_str = i;
+          }
+          else if ( 0x22 == line[i] && (qte_str != 0)){
+            qte_end = i;
+          }
+        }
+
+        /* If both quote marks we have a string*/
+        if (qte_str && qte_end) {
+          /* Get the definition part of the original string */
+          char * tmp_str_header = (char*)calloc(qte_str, sizeof(char));
+          snprintf (tmp_str_header, qte_str, "%s", line);
+
+          /* Slice the string to extract only chactrers without quotes*/
+          uint16_t str_len = qte_end-qte_str;
+          char * tmp_str_payload = (char*)calloc(str_len, sizeof(char));
+          snprintf (tmp_str_payload, str_len, "%s", line+qte_str+1);
+
+          /* Let user know which entries are modified */
+          printf("Encoding %s\n",tmp_str_header);
+
+          /* Encode the payloads */
+          int16_t tmp_str_payload_e[str_len-1];
+          /* overhead = )(strlength - null) * (char_no*7) ) -1 (, in first c)
+          + 2 ({} chars) + 1 null space*/
+          uint16_t hdr_str_len = ((str_len - 1) * 7) + 2;
+          char tmp_str_payload_d[hdr_str_len];
+          _STRHT_ENCRPT_(tmp_str_payload, tmp_str_payload_e);
+
+          /* Print it in header friendly format */
+          _STRHT_ARR2HDR_(tmp_str_payload_e, tmp_str_payload_d);
+
+          /* Add an extra character for the newline */
+          char line_replace[qte_str+hdr_str_len + 1];
+          snprintf (line_replace,
+                    qte_str+hdr_str_len +1, "%s %s\n",
+                    tmp_str_header,
+                    tmp_str_payload_d);
+
+          fprintf(out_file, "%s", line_replace);
+
+          /* Cleanup memory */
+          free(tmp_str_header);
+          free(tmp_str_payload);
+          continue;
+        }
+      }
+      fprintf(out_file, "%s", line);
+  }
+  fclose(in_file);
+  fclose(out_file);
+  if (line)
+    free(line);
+  return;
 }
