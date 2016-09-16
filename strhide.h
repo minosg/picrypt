@@ -39,17 +39,28 @@
 #define _STRHT_DECRPT_(e, d) decrypt_string((e),(d),sizeof((e)),sizeof((d)))
 #define _STRHT_ENCRPT_(s, e) encrypt_string((s),(e),sizeof((e)))
 #define _STRHT_CMP_(a, b) compare_encrypted_str((a),(b),sizeof((a)),sizeof((b)))
-
+#define _STRHT_ARR2HDR_(a, h) array_to_header((a),sizeof((a)),(h))
 #endif /* _STRHIDE_H_ */
 
 /**
  * Print byte contents of array
  *
- * @param serial array array to print.
- * @param serial byte_size allocated size of array in bytes.
+ * @param array array to print.
+ * @param byte_size allocated size of array in bytes.
  *
  */
 void print_array(int16_t *array, const uint16_t byte_size);
+
+/**
+ * Convert the payload of an encrypted buffer to a header file friendly format
+ *
+ * @param array array to print.
+ * @param byte_size allocated size of array in bytes.
+ * @param r_buff Buffer to copy the data to.
+ *
+ * @return A pointer to the output buffer
+ */
+char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff);
 
 /**
  * Ecnryption function that hides a string inside a signed int array

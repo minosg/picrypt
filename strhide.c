@@ -27,6 +27,27 @@ void print_array(int16_t *array, const uint16_t byte_size)
   }
 }
 
+char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
+{
+  uint16_t idx = 1;
+
+  uint8_t x = snprintf (r_buff, 2, "{");
+
+  for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
+    /* Do not put comma in first entry*/
+    if (i==0)  {
+      snprintf (r_buff+idx, 7, "0x%04X", array[i]);
+      idx--;
+    } else {
+      snprintf (r_buff+idx, 8, ",0x%04X", array[i]);
+    }
+    idx=idx+7;
+  }
+
+  snprintf (r_buff+idx, 2, "}");
+  return r_buff;
+}
+
 void encrypt_string(char const *raw_string,
                     int16_t *output,
                     const uint16_t byte_size)
