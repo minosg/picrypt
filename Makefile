@@ -12,7 +12,7 @@
 #\****************************************************************************/
 
 CC=gcc
-CFLAGS=-c -Wall -std=c99
+CFLAGS=-c -Wall -std=c99 -s
 SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
