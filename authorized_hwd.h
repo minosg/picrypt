@@ -11,23 +11,25 @@
  * File Description: User input parameters                                    *
  \****************************************************************************/
 /* Those fields need to be completed  by the user */
+#ifndef _HW_AUTH_H_
+#define _HW_AUTH_H_
 
 #define APP_ID     "FF112233"                         ///< Applcation ID
 #define HWD_ID     "aabbccdd"                         ///< CPU_Serial
 #define MACHINE_ID "4b7eaab33d5b1847a77aceb0550c3474" ///< Soft ID
 #define FILE_SEED  "/etc/fstab"                       ///< File for SHA SEED
-#define FILE_SHA1  ("9b0412be89c672159deee5"\
-                    "f041d9b60d24a3944f")             ///< sha of file
+#define FILE_SHA1  "9b0412be89c672159deee5f041d9b60d24a3944f"///< sha of file
 #define HWD_SRC     "/dev/ttyUSB0"                    ///< Port of HW dongle
 #define PI_VER     3                                  ///< PI Board Version
 #define PROTECTION CARE_BEAR                          ///< Level of protection
 
-#define _STRHT_USR_SALT 0x01                          ///< Override String Salt
+#define _STRHT_USR_SALT 0x71                          ///< Override String Salt
 
 /* Special definitions  */
 #define FAKE_SERIAL     0xaabbccdd                    ///< (Devel) Fake serial
 //#define LONG_HASH                                   ///< 2x the passwd length
 
+#endif /* _HW_AUTH_H_ */
 /*****************************************************************************\
  *                           Notes                                            *
  \****************************************************************************\

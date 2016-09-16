@@ -11,7 +11,7 @@
  * File Description: Main Program                                             *
  \****************************************************************************/
 
-#include "authorized_hwd.h"
+#include "authorized_hwd_e.h"
 #include "picrypt.h"
 
 int main(int argc, char **argv)
@@ -29,7 +29,12 @@ int main(int argc, char **argv)
   uint64_t serial = (uint64_t)FAKE_SERIAL;
   #endif
 
-  uint64_t permitted_serial = (uint64_t)strtoull(HWD_ID, NULL, 16);
+  /* Decrypt the CPU Serial */
+  const int16_t hardware_id_e[] = HWD_ID;
+  char hardware_id_d[CPU_SER_SIZE + 1];
+  _STRHT_DECRPT_(hardware_id_e, hardware_id_d);
+  printf ("DECRYPTED SERIAL %s\n", hardware_id_d);
+  uint64_t permitted_serial = (uint64_t)strtoull(hardware_id_d, NULL, 16);
 
   /* Add the data to the hw_info structure */
   hwinfo_add(hardware_info, HW_SERIAL, &serial);
@@ -41,18 +46,22 @@ int main(int argc, char **argv)
   #endif
   #ifdef MACHINE_ID
   /* Allocate buffers */
-  int16_t machine_id_hd_e[MACHINE_ID_SIZE];
+  int16_t machine_id_hd_e[] = MACHINE_ID;
   int16_t machine_id_rt_e[MACHINE_ID_SIZE];
 
-  /* Exctact Current Machine ID (not sensitive) */
+  /* Decrypt for debugging TODO Remove in production */
   char machine_id_hd_d[MACHINE_ID_SIZE + 1];
-  soft_machine_id(machine_id_hd_d);
+  _STRHT_DECRPT_(machine_id_hd_e, machine_id_hd_d);
+  printf ("DECRYPTED MachineID %s\n", machine_id_hd_d);
+
+  /* Exctact Current Machine ID (not sensitive) */
+  char machine_id_rt_d[MACHINE_ID_SIZE + 1];
+  soft_machine_id(machine_id_rt_d);
 
   /* Add the machine-id to the hw_info structure */
-  hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_hd_d);
+  hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_rt_d);
 
-  _STRHT_ENCRPT_(MACHINE_ID, machine_id_hd_e);
-  _STRHT_ENCRPT_(machine_id_hd_d, machine_id_rt_e);
+  _STRHT_ENCRPT_(machine_id_rt_d, machine_id_rt_e);
 
   if (PROTECTION >= ARCH_USER) {
     if (!_STRHT_CMP_(machine_id_rt_e, machine_id_hd_e)) {
@@ -68,18 +77,24 @@ int main(int argc, char **argv)
    variable_hd/rt_e -> variable name,
                        hash_defined/runtime
                        encrypted/decrypted*/
-  int16_t file_seed_hd_e[strlen(FILE_SEED)];
-  int16_t file_sha_hd_e[SHA_DIGEST_LENGTH * 2];
+  int16_t file_seed_hd_e[] = FILE_SEED;
+  int16_t file_sha_hd_e[] = FILE_SHA1;
   int16_t file_sha_rt_e[SHA_DIGEST_LENGTH * 2];
 
   /* Allocate the memory for the decryption buffers */
   // char file_sha_rt_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
   char sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
-  char file_seed_hd_d[strlen(FILE_SEED)+1];
+
+  /* Decrypt for debugging TODO Remove in production */
+  char file_seed_hd_d[(sizeof(file_seed_hd_e)/sizeof(int16_t)) +1];
+  _STRHT_DECRPT_(file_seed_hd_e, file_seed_hd_d);
+  printf ("DECRYPTED File Seed %s \n", file_seed_hd_d);
+
+  char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1];
+  _STRHT_DECRPT_(file_sha_hd_e, sha_hash_hd_d);
+  printf ("DECRYPTED SHA %s \n", sha_hash_hd_d);
 
   /* Store the sensitive information */
-  _STRHT_ENCRPT_(FILE_SEED, file_seed_hd_e);
-  _STRHT_ENCRPT_(FILE_SHA1, file_sha_hd_e);
   sha1_from_en_buf_to_en_buff(file_seed_hd_e,
                               sizeof(file_seed_hd_e),
                               file_sha_rt_e);
