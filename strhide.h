@@ -37,7 +37,7 @@
 #ifndef _STRHT_USR_SALT
 #define _STRHT_USR_SALT 0x71                              ///< Obsuscation Salt
 #endif  /* Random user salt */
-#define _STRHT_ARR_LEN(a, s) ((uint16_t)(s) /sizeof(*(a))) ///< Data len for arr
+#define _STRHT_ARR_LEN(a, s) ((uint16_t)((s) /sizeof(*(a)))) ///< Data entries
 
 /* Helper macros. DO NOT USE when input arguments are pointers */
 #define _STRHT_DECRPT_(e, d) decrypt_string((e),(d),sizeof((e)),sizeof((d)))
