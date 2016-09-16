@@ -17,9 +17,13 @@ SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
 
-picrypt : strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o
+picrypt : ppprocessor strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o\
 		-o picrypt $(SSLFLAGS)
+
+ppprocessor : 	ppprocessor.o strhide.o
+			$(CC) ppprocessor.o strhide.o -o ppprocessor
+			./ppprocessor
 
 picrypt_main.o : picrypt_main.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) picrypt_main.c
@@ -33,7 +37,8 @@ hwinfo.o :  hwinfo.c hwinfo.h
 strhide.o : strhide.c strhide.h authorized_hwd.h
 	$(CC) $(CFLAGS) strhide.c
 
-
+ppprocessor.o: ppprocessor.c strhide.h authorized_hwd.h
+	$(CC) $(CFLAGS) ppprocessor.c
 
 usr_set_keygen.o :usr_set_keygen.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) usr_set_keygen.c
@@ -41,3 +46,4 @@ usr_set_keygen.o :usr_set_keygen.c picrypt.h authorized_hwd.h
 clean :
 	rm -f *.o
 	rm -f *.h.gch
+	rm -f authorized_hwd_e.*
