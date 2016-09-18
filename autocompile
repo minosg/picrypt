@@ -1,0 +1,282 @@
+#!/usr/bin/env python
+
+"""autocompile: Compile Helper for PiCrypto Code..."""
+
+__author__ = "Minos Galanakis"
+__license__ = "GPL v3"
+__version__ = "0.0.1"
+__email__ = "minos197@gmail.com"
+__project__ = "picrypt"
+__date__ = "01-07-2016"
+
+import os
+import re
+import sys
+import shutil
+import argparse
+from random import randint
+from subprocess import call, Popen, PIPE
+
+revs = {"0xa01041": "2", '0xa02082': "3"}
+
+
+def run(cmd):
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    ret, err = p.communicate()
+    if not p.returncode:
+        return ret.strip()
+    else:
+        raise RuntimeError(err)
+
+
+def get_serial():
+    with open("/proc/cpuinfo", "r") as F:
+        s = re.search(r'(?:[0]{8})([a-z0-9]{8})', F.read()).group(1)
+    return s
+
+
+def reset_machine_id():
+    ref_mid = get_machine_id()
+    for f in ["/etc/machine-id", "/var/lib/dbus/machine-id"]:
+        try:
+            os.remove(f)
+        except OSError as e:
+            print(e.message)
+            continue
+    call("/bin/systemd-machine-id-setup 2> /dev/null", shell=True)
+    print("Changed id from %s to: %s" % (ref_mid, get_machine_id()))
+    exit(0)
+
+
+def get_machine_id():
+    with open("/etc/machine-id", "r") as F:
+        return F.read().strip()
+
+
+def get_revision():
+    with open('/proc/cmdline', 'r') as f:
+        line = f.readline()
+    m = re.search('bcm270[0-9].boardrev=(0x[0123456789abcdef]*)', line)
+    revision = m.group(1)
+    try:
+        return revs[revision]
+    except Exception as e:
+        print("Did not find revision %s" % revision)
+        raise ValueError
+
+
+def scan_dir(dir):
+    dir_list = []
+    for root, directories, filenames in os.walk(dir):
+        for filename in filenames:
+            dir_list.append(os.path.join(root, filename))
+    return dir_list
+
+
+def choose_file():
+    file_seed = scan_dir("/etc/") +\
+                scan_dir("/usr/bin/") +\
+                scan_dir("/usr/lib/")
+    uinp = ""
+    print("Created a pool of %d files." % len(file_seed))
+    while (uinp != "y"):
+        r_idx = randint(0, len(file_seed)-1)
+        uinp = raw_input("Selected %s,Accept? "
+                         "Yes/ Retry/ Abort ? (y/r/a)" % file_seed[r_idx])
+        uinp = uinp.strip().lower()
+        if uinp == "a":
+            return ""
+        if uinp == "r":
+            continue
+    usr_file = file_seed[r_idx]
+    usr_fpath, usr_fname = os.path.split(usr_file)
+    test_file = usr_fname.split(".")
+
+    base_name = test_file[0]
+    i = 0
+    # Try to create a small variant of the file that does not exist.
+    while True:
+        try:
+            lst_digit = int(base_name[-1]) + i
+            new_name = base_name[:-1] + ("%d" % lst_digit)
+            if (i > 10):
+                new_name = base_name[:-1] + ("%d" % randint(10, 100))
+
+        # The name does not end in a number
+        except ValueError:
+            new_name = base_name + ("%d" % randint(0, 10))
+
+        # Check if the new file exists
+        test_file[0] = new_name
+        new_file = os.path.join(usr_fpath, ".".join(test_file))
+        print("Loop %s %s " % (test_file, new_file))
+        if os.path.isfile(new_file):
+            i += 1
+            continue
+        break
+    print("Copying %s as %s and using the new name as a seed" % (usr_file,
+                                                                 new_file))
+    shutil.copy(usr_file, new_file)
+    return new_file
+
+
+def get_sha1(file_path):
+    cmd = ["sha1sum /etc/fstab | awk '{print $1}'"]
+    ret, err = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE).communicate()
+    if ret:
+        return ret.strip()
+    else:
+        return None
+
+
+def gcc_compile(source,
+                output,
+                piver, protection="CARE_BEAR",
+                hwid=None,
+                machid=None,
+                keyfile=None,
+                lhash=None,
+                fserial=None,
+                debug=None):
+
+    protection_lvs = ["CARE_BEAR",
+                      "SCRIPT_KIDDY",
+                      "ARCH_USER",
+                      "PEN_TESTER",
+                      "TIN_FOIL_HAT"]
+
+    if keyfile:
+        sha = get_sha1(get_sha1)
+    else:
+        keyfile = choose_file()
+
+    # Compile the header file for current build
+    hwd_text = "#ifndef _HW_AUTH_H_\n#define _HW_AUTH_H_\n"
+    hwd_text += '#define %s %s\n' % ("PI_VER", piver)
+    if hwid:
+        hwd_text += '#define %s "%s"\n' % ("HWD_ID", hwid)
+    if machid:
+        hwd_text += '#define %s "%s"\n' % ("MACHINE_ID", machid)
+    if keyfile:
+        hwd_text += '#define %s "%s"\n' % ("FILE_SEED", keyfile)
+        hwd_text += '#define %s "%s"\n' % ("FILE_SHA1", sha)
+    hwd_text += '#define %s 0x%x\n' % ("_STRHT_USR_SALT", randint(0, 1000))
+    if fserial:
+        hwd_text += '#define %s "%s"\n' % ("FAKE_SERIAL", fserial)
+    if protection in protection_lvs:
+        hwd_text += '#define %s %s\n' % ("PROTECTION", protection)
+    if lhash:
+        hwd_text += '#define %s\n' % ("LONG_HASH")
+    if debug:
+        hwd_text += '#define %s\n' % ("DEBUG")
+    hwd_text += "#endif"
+
+    with open(hwd, "w") as F:
+        F.write(hwd_text)
+    # Compile the binary
+    cmd = "make clean && make"
+    ret = run(cmd)
+    call("mv picrypt %s" % output, shell=True)
+    print("Compiled %s" % output)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--reset",
+                        "-r",
+                        help="Reset current units machine-id",
+                        dest="reset",
+                        action="store_true")
+    parser.add_argument("--compile",
+                        "-c",
+                        help="Compile all",
+                        dest="compile",
+                        action="store_true")
+    parser.add_argument("--keyfile",
+                        "-k",
+                        help="Use file as sha1 keyfile",
+                        dest="keyfile",
+                        action="store")
+    parser.add_argument("--lhash",
+                        "-l",
+                        help="create double length password",
+                        dest="lhash",
+                        action="store_true")
+    parser.add_argument("--fake",
+                        "-f",
+                        help="Add a fake serial to detection method",
+                        dest="fake_serial",
+                        action="store")
+    parser.add_argument("--debug",
+                        "-d",
+                        help="Executable will print out auth failures",
+                        dest="debug",
+                        action="store_true")
+    parser.add_argument("--protection",
+                        "-p",
+                        help="Set the protection level",
+                        default="CARE_BEAR",
+                        dest="protection",
+                        action="store")
+    usr_args = parser.parse_args()
+
+    if usr_args.compile:
+        # Set-up
+        working_dir = os.getcwd()
+        source_dir = os.path.abspath("./")
+        source = os.path.join(source_dir, "picrypt.c")
+        hwd = os.path.join(source_dir, "authorized_hwd.h")
+        hwd_backup = os.path.join(source_dir, "authorized_hwd.h.back")
+        compile_dir = os.path.join(working_dir, "bin")
+
+        # Reset if a reset flag is passed through
+        if usr_args.reset:
+            print("Reseting machine-id")
+            reset_machine_id()
+
+        # Compile for current hardware
+        # Placeholder for future multi-binary compillation support.
+        serials = [(get_revision(),
+                    get_serial(),
+                    get_machine_id(),
+                    choose_file())]
+
+        # Compile the files
+        if os.path.isfile(source) and serials:
+            print("Using Source file %s" % source)
+            run("mkdir -p %s" % compile_dir)
+            run("rm -rf %s/./*" % compile_dir)
+            # Make a backup of hwd_backup
+            try:
+                shutil.move(hwd, hwd_backup)
+                backup_present = True
+            except IOError:
+                backup_present = False
+            for rev, ser, mid, key_f in serials:
+                b_name = "picrypt_%s" % ser
+                b_path = os.path.join(compile_dir, b_name)
+                gcc_compile(source=source,
+                            output=b_path,
+                            piver=rev,
+                            protection=usr_args.protection,
+                            hwid=ser,
+                            machid=mid,
+                            keyfile=key_f,
+                            lhash=usr_args.lhash,
+                            fserial=usr_args.fake_serial,
+                            debug=usr_args.debug)
+                # Add the serial to the authorized header
+
+            # cleanup
+            if backup_present:
+                shutil.move(hwd_backup, hwd)
+        else:
+            print("Error with source: %s and serials: %s" % (source,
+                                                             repr(serials)))
+            sys.exit(1)
+    elif usr_args.reset:
+        print("Reseting machine-id")
+        reset_machine_id()
+        sys.exit(0)
+    else:
+        parser.print_help()
