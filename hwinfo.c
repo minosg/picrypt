@@ -116,7 +116,6 @@ void hwinfo_print(hwd_nfo_param_t * hw_info_struct)
       printf("%s: %" PRIx64 "\n", str_type, *(uint64_t*)current->hw_payload);
     } else if (current->hw_type == HW_AUTHORIZED) {
       printf("%s: %s\n", str_type, *(bool *)current->hw_payload ? "true" : "false");
-      //printf("Payload: %d\n", *(uint8_t*)current->hw_payload);
     } else {
       printf("%s: %s\n",str_type, (char *)current->hw_payload);
     }
