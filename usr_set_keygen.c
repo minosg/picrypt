@@ -22,6 +22,7 @@ the result of your method */
 uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 {
   /* Uncomment any of the fields that you need to calcuate the hash key
+  const bool *authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
   const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
   const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
   const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);

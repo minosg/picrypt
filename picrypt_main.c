@@ -112,6 +112,10 @@ int main(int argc, char **argv)
   }
   #endif
 
+  /* Add the permitted variable to the data structure */
+  hwinfo_add(hardware_info, HW_AUTHORIZED,  (bool *)&permitted);
+  hwinfo_print(hardware_info);
+
   /* Ensure the executable is run from intended machine.
      This check is important because the executable is not encrypted,
      and running it over to a different hwd would be an attack vector. */

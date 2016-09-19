@@ -83,11 +83,42 @@ void hwinfo_print(hwd_nfo_param_t * hw_info_struct)
   for(int i = 0;i < hw_info_struct->hw_entries;i++) {
     printf("\nPage: %d\n",i);
     printf("Entries: %d\n",current->hw_entries);
-    printf("Type: %d\n",current->hw_type);
+    const char * str_type;
+    switch (current->hw_type)
+    {
+      case 0:
+        str_type = "Empty";
+        break;
+
+      case 1:
+        str_type = "CPU Serial";
+        break;
+
+      case 2:
+        str_type = "Machine ID";
+        break;
+
+      case 3:
+        str_type = "SHA1";
+        break;
+
+      case 4:
+        str_type = "HW Dongle ID";
+        break;
+
+      case 5:
+        str_type = "Authorized";
+        break;
+    }
+
+    printf("Type Number: %d\n",current->hw_type);
     if (current->hw_type == HW_SERIAL) {
-      printf("Serial: %" PRIx64 "\n", *(uint64_t*)current->hw_payload);
+      printf("%s: %" PRIx64 "\n", str_type, *(uint64_t*)current->hw_payload);
+    } else if (current->hw_type == HW_AUTHORIZED) {
+      printf("%s: %s\n", str_type, *(bool *)current->hw_payload ? "true" : "false");
+      //printf("Payload: %d\n", *(uint8_t*)current->hw_payload);
     } else {
-      printf("PL: %s\n", (char *)current->hw_payload);
+      printf("%s: %s\n",str_type, (char *)current->hw_payload);
     }
     current = current->next;
   }

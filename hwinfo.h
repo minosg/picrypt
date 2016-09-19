@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <inttypes.h>
 
 #define __STDC_FORMAT_MACROS
@@ -29,7 +30,8 @@ typedef enum hwd_nfo_type {
   HW_SERIAL        = 1, ///< CPU Serial
   HW_MACHINE_ID    = 2, ///< Software Machine ID
   HW_SHA1          = 3, ///< Calculated SHA1 hash
-  HW_DNGLE_KEY  = 4 ///< CPU Serial, Software, and Random File SHA
+  HW_DNGLE_KEY     = 4, ///< CPU Serial, Software, and Random File SHA
+  HW_AUTHORIZED    = 5  ///< Pass the result of the hw detection tests.
 } hwd_nfo_type_t;
 
 /**
