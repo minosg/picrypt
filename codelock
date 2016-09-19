@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+
+"""codelock.py:  Helper utility that encrypts a directory requested by the
+user.It assumes a pre compiled picrypt binary is located at /usr/bin/picrypt"""
+
+__author__ = "Minos Galanakis"
+__license__ = "GPL v3"
+__version__ = "0.0.1"
+__email__ = "minos197@gmail.com"
+__project__ = "PiCrypt"
+__date__ = "01-07-2016"
+
+import os
+import re
+import sys
+from subprocess import call, Popen, PIPE
+
+
+def run(cmd):
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    ret, err = p.communicate()
+    if not p.returncode:
+        return ret.strip()
+    else:
+        raise RuntimeError(err)
+
+if __name__ == "__main__":
+    target = sys.argv[1] if len(sys.argv) == 2 else ""
+    target = os.path.abspath(target)
+
+    # If the argument is not there
+    if len(sys.argv) != 2:
+        print("Target directory not specified")
+        print("Usage: codelock /opt/yourdir")
+        sys.exit(1)
+    elif os.path.isdir(target) and os.listdir(target):
+
+        print("Copying files to temporary directory")
+        # Make a working directory
+        run("mkdir -p /tmp/codelock")
+
+        # Copy existing data there
+        run("cp -prf %s/* /tmp/codelock/" % target)
+
+    elif not call("mkdir -p %s" % target, shell=True):
+        print("Created new directory %s" % target)
+    else:
+        print("%s is not a valid target directory" % target)
+        sys.exit(1)
+
+    try:
+        # Get the hardware related password
+        passwd = run("picrypt --hash")
+        print("password:    ", passwd)
+
+        # Add it to keyring
+        r = run(('printf "%s" "passphrase" | ecryptfs-add-passphrase'
+                ' --fnek') % passwd)
+
+        # Fetch hashes from keyring
+        sig, fnek_sig = re.findall(r'(?:\[)(.*)(?:\])', r)
+        if not sig or not fnek_sig:
+            print("Error adding to keychain")
+            sys.exit(1)
+        print("signature:   ", sig)
+        print("fnek_sig:    ", fnek_sig)
+
+        # Mount the encrypted directory
+        options = ["verbose=yes",
+                   "key=passphrase:passphrase_passwd=%s" % passwd,
+                   "ecryptfs_fnek_sig=%s" % fnek_sig,
+                   "ecryptfs_enable_filename_crypto=y",
+                   "ecryptfs_sig=%s" % sig,
+                   "no_sig_cache=y",
+                   "ecryptfs_cipher=aes",
+                   "ecryptfs_key_bytes=16",
+                   "ecryptfs_passthrough=n"]
+        mnt_cmd = "mount -t ecryptfs -o %s %s %s" % (",".join(options),
+                                                     target,
+                                                     target)
+        print(mnt_cmd)
+        run(mnt_cmd)
+        print("Mounted directory with encryption")
+
+        # If intermediate directory exists copy data over
+        if os.path.isdir("/tmp/codelock/"):
+            print("Copying files to encrypted directory")
+            run("cp -prf /tmp/codelock/* %s" % (target))
+
+        # create the automount file
+        mnt_rc = ["key=passphrase:passphrase_passwd_file=/tmp/lock.key",
+                  "ecryptfs_unlink_sigs",
+                  "ecryptfs_sig=%s" % sig,
+                  "ecryptfs_fnek_sig=%s" % fnek_sig,
+                  "ecryptfs_cipher=aes",
+                  "ecryptfs_key_bytes=16",
+                  "no_sig_cache=y",
+                  "ecryptfs_passthrough=n",
+                  "ecryptfs_enable_filename_crypto=y"]
+        with open("/root/.ecryptfsrc", "w") as F:
+            F.write("\n".join(mnt_rc))
+        print("Created /root/.ecryptfsrc")
+
+        run("mkdir -p /root/.ecryptfs/")
+        with open("/root/.ecryptfs/sig-cache.txt", "w") as F:
+            F.write(sig+"\n")
+        print("Created /root/.ecryptfs/sig-cache.txt")
+
+        # Add the entry to fstab
+        run((r'sed -i "/fi/a\\\nsleep 5\n\necho \$(/usr/bin/picrypt --ramkey)'
+            r' | ecryptfs-add-passphrase --fnek > /dev/null\n/bin/mount -t '
+             r'ecryptfs %(mdir)s  %(mdir)s >/dev/null\nsleep 5\n'
+             r'rm -f /tmp/lock.key" /etc/rc.local') % {"mdir": target})
+        print("Added rc.local entry")
+
+        # Cleanup
+        run("rm -rf /tmp/codelock")
+        print("Done Please reboot the system to test")
+    except Exception as e:
+        print("Failed", e.message)
