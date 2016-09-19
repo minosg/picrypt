@@ -21,6 +21,20 @@ int main(int argc, char **argv)
   char hash_key_d[HBUFF_SZ+1];
   int16_t hash_key_e[HBUFF_SZ];
 
+  /* Add breakpoint detection to critical methods */
+  uint8_t btd = (bp_det((uint64_t)&hwinfo_add)+\
+                 bp_det((uint64_t)&soft_machine_id)+\
+                 bp_det((uint64_t)&sha1_from_en_buf_to_en_buff)+\
+                 bp_det((uint64_t)&hash_enc)+\
+                 bp_det((uint64_t)&hwinfo_add)+\
+                 bp_det((uint64_t)&encrypt_string)+\
+                 bp_det((uint64_t)&hwinfo_get_pl));
+  if (btd != 0) {
+    printf("Warning Tampering Detected (bp)\n");
+    permitted = false;
+    /* TODO Make it goto somewhere */
+  }
+
   #ifdef HWD_ID
   /* Allow the user to override the detected CPU serial */
   #ifndef FAKE_SERIAL
@@ -110,6 +124,10 @@ int main(int argc, char **argv)
   }
   #endif
 
+  if (lv_det() || gb_det()) {
+    printf("Warning Tampering Detected\n");
+    permitted = false;
+  }
 
 
   /* Program will NOT break execution when a wrong password
@@ -117,7 +135,7 @@ int main(int argc, char **argv)
   #ifdef DEVEL
   if (!permitted) {
     printf("This is the password you are looking for...\n"
-           "( You pesky pirate !!! )\n");
+           "( You pirate !!! )\n");
     exit(1);
   }
   #endif
@@ -125,7 +143,7 @@ int main(int argc, char **argv)
   /* Add the permitted variable to the data structure */
   hwinfo_add(hardware_info, HW_AUTHORIZED,  (bool *)&permitted);
 
-  //printf("DEBUG: %s\n",hash_str(hardware_info, hash_key_d));
+  /* Calculate the password hash */
   hash_enc(hardware_info, hash_key_e, sizeof(hash_key_e));
 
   if (argc == 1) {

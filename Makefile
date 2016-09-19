@@ -17,8 +17,8 @@ SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
 
-picrypt : ppprocessor strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o
-	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o\
+picrypt : ppprocessor strhide.o hwinfo.o usr_set_keygen.o adb.o picrypt_main.o picrypt.o
+	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o adb.o \
 		-o picrypt $(SSLFLAGS)
 
 ppprocessor : 	ppprocessor.o strhide.o
@@ -42,6 +42,9 @@ ppprocessor.o: ppprocessor.c strhide.h authorized_hwd.h
 
 usr_set_keygen.o :usr_set_keygen.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) usr_set_keygen.c
+
+adb.o: adb.c adb.h
+	$(CC) $(CFLAGS) adb.c
 
 clean :
 	rm -f *.o

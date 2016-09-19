@@ -25,6 +25,7 @@
 
 #include "strhide.h"
 #include "hwinfo.h"
+#include "adb.h"
 
 #define __STDC_FORMAT_MACROS
 #define CPU_SER_SIZE    8                 ///< Len of serial in Bytes
