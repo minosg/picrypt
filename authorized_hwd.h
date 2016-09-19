@@ -21,14 +21,14 @@
 #define FILE_SHA1  "9b0412be89c672159deee5f041d9b60d24a3944f"///< sha of file
 #define HWD_SRC     "/dev/ttyUSB0"                    ///< Port of HW dongle
 #define PI_VER     3                                  ///< PI Board Version
-#define PROTECTION CARE_BEAR                          ///< Level of protection
+#define PROTECTION PEN_TESTER                          ///< Level of protection
 
 #define _STRHT_USR_SALT 0x71                          ///< Override String Salt
 
 /* Special definitions  */
 #define FAKE_SERIAL     0xaabbccdd                    ///< (Devel) Fake serial
 //#define LONG_HASH                                   ///< 2x the passwd length
-
+//#define DEVEL                                       ///< Developper build
 #endif /* _HW_AUTH_H_ */
 /*****************************************************************************\
  *                           Notes                                            *
