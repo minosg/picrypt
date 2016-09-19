@@ -29,18 +29,19 @@ int main(int argc, char **argv)
   uint64_t serial = (uint64_t)FAKE_SERIAL;
   #endif
 
-  /* Decrypt the CPU Serial */
+  /* Decrypt the Authorized CPU Serial */
   const int16_t hardware_id_e[] = HWD_ID;
   char hardware_id_d[CPU_SER_SIZE + 1];
   _STRHT_DECRPT_(hardware_id_e, hardware_id_d);
-  printf ("DECRYPTED SERIAL %s\n", hardware_id_d);
   uint64_t permitted_serial = (uint64_t)strtoull(hardware_id_d, NULL, 16);
 
   /* Add the data to the hw_info structure */
   hwinfo_add(hardware_info, HW_SERIAL, &serial);
 
   if ((PROTECTION >= SCRIPT_KIDDY) && (permitted_serial != serial)) {
+    #ifdef DEVEL
     printf("Serial Miss-Match!! \n");
+    #endif
     permitted = false;
   }
   #endif
@@ -49,10 +50,8 @@ int main(int argc, char **argv)
   int16_t machine_id_hd_e[] = MACHINE_ID;
   int16_t machine_id_rt_e[MACHINE_ID_SIZE];
 
-  /* Decrypt for debugging TODO Remove in production */
-  char machine_id_hd_d[MACHINE_ID_SIZE + 1];
-  _STRHT_DECRPT_(machine_id_hd_e, machine_id_hd_d);
-  printf ("DECRYPTED MachineID %s\n", machine_id_hd_d);
+  /* Decryption Buffer */
+  // char machine_id_hd_d[MACHINE_ID_SIZE + 1]; /* Placeholder */
 
   /* Exctact Current Machine ID (not sensitive) */
   char machine_id_rt_d[MACHINE_ID_SIZE + 1];
@@ -65,7 +64,9 @@ int main(int argc, char **argv)
 
   if (PROTECTION >= ARCH_USER) {
     if (!_STRHT_CMP_(machine_id_rt_e, machine_id_hd_e)) {
+      #ifdef DEVEL
       printf("Machine ID Miss Match!! \n");
+      #endif
       permitted = false;
     }
   }
@@ -85,14 +86,9 @@ int main(int argc, char **argv)
   // char file_sha_rt_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
   char sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
 
-  /* Decrypt for debugging TODO Remove in production */
+  /* Decryption Buffers */
   char file_seed_hd_d[(sizeof(file_seed_hd_e)/sizeof(int16_t)) +1];
-  _STRHT_DECRPT_(file_seed_hd_e, file_seed_hd_d);
-  printf ("DECRYPTED File Seed %s \n", file_seed_hd_d);
-
-  char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1];
-  _STRHT_DECRPT_(file_sha_hd_e, sha_hash_hd_d);
-  printf ("DECRYPTED SHA %s \n", sha_hash_hd_d);
+  // char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
 
   /* Store the sensitive information */
   sha1_from_en_buf_to_en_buff(file_seed_hd_e,
@@ -106,7 +102,9 @@ int main(int argc, char **argv)
 
   if (PROTECTION >= PEN_TESTER) {
     if (!_STRHT_CMP_(file_sha_rt_e,file_sha_hd_e)) {
+      #ifdef DEVEL
       printf("SHA1 Miss-Match!! \n");
+      #endif
       permitted = false;
     }
   }
