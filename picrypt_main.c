@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   int16_t hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
-  uint8_t btd = (bp_det((uint64_t)&hwinfo_add)+\
+ uint8_t btd = (bp_det((uint64_t)&hwinfo_add)+\
                  bp_det((uint64_t)&soft_machine_id)+\
                  bp_det((uint64_t)&sha1_from_en_buf_to_en_buff)+\
                  bp_det((uint64_t)&hash_enc)+\
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   if (btd != 0) {
     printf("Warning Tampering Detected (bp)\n");
     permitted = false;
-    /* TODO Make it goto somewhere */
+    // TODO Make it goto somewhere
   }
 
   #ifdef HWD_ID
@@ -154,6 +154,7 @@ int main(int argc, char **argv)
     printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
     printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
+  #ifdef DEVEL
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
     if (validate_key(argv[2])) {
       printf("Key %s is Valid\n", argv[2]);
@@ -162,6 +163,7 @@ int main(int argc, char **argv)
       printf("Key %s is Invalid\n", argv[2]);
       return 1;
     }
+  #endif
   #endif
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");

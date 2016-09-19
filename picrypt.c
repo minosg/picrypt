@@ -170,23 +170,28 @@ void ram_key(const char * hash_key)
 /* verify that a key is valid for this hardware */
 bool validate_key(char const *key)
 {
+  char hash_key_d[(strlen(key) * 2) + 1];
   if (strlen(key) > 8) {
     return false;
   }
-  uint64_t ukey = (uint64_t)strtoull(key, NULL, 16);
+
   /* Create a temporary hardware_info structure and add the serial */
+  uint64_t ukey = (uint64_t)strtoull(key, NULL, 16);
   hwd_nfo_param_t * tmp_data = hwinfo_init();
   hwinfo_add(tmp_data, HW_SERIAL, &ukey);
+  /* Assume it is authorized, or it will fail user anti-tamper */
+  bool authorized = true;
+  hwinfo_add(tmp_data, HW_AUTHORIZED, (bool *)(&authorized));
 
-  uint64_t hdw_key = hash_low(tmp_data);
+  /* Calculate the hash */
+  hash_str(tmp_data, hash_key_d);
+
   /* Free the memory */
   hwinfo_dealloc(tmp_data);
 
-  if (ukey == hdw_key) {
-    return true;
-  } else {
-    return false;
-  }
+  /* Compare the strings and square to get rid of the negatives */
+  int16_t r = strcmp(hash_key_d, key);
+  return !(bool)(r*r);
 }
 
 /* Diplay a help menu */
@@ -196,7 +201,9 @@ void help(const char* prgm)
   #ifdef HWD_ID
   printf("%s --hash          : Generate Unique Machine Hash\n", prgm);
   printf("%s --ramkey        : Create an encryptfs unlock key to RAM \n", prgm);
+  #ifdef DEVEL
   printf("%s --check xxxxxx  : Check if a key is valid or not \n", prgm);
+  #endif
   #endif
   printf("%s --vhash         : Print Verbose Unique Machine Hash\n", prgm);
 }
