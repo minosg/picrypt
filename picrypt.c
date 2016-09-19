@@ -153,7 +153,7 @@ void ram_key(const char * hash_key)
   FILE *fptr;
   fptr=fopen(RAM_FILE,"w");
   if(fptr==NULL) {
-    printf("Error!");
+    printf("Error Opening File!");
     exit(1);
   }
 
@@ -162,7 +162,9 @@ void ram_key(const char * hash_key)
   fprintf(fptr,"%s\n",key_text);
   fclose(fptr);
   /* Change permissions to read only for owner only (root) */
-  chmod(RAM_FILE, S_IRUSR);
+  /* TODO in production make the file read only
+  chmod(RAM_FILE, S_IRUSR); */
+  chmod(RAM_FILE, S_IWUSR | S_IRUSR);
 }
 
 /* verify that a key is valid for this hardware */
