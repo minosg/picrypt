@@ -27,7 +27,20 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo)
   const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
   const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
   */
-  return (uint64_t)(1);
+
+  uint8_t ret = 1;
+  bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
+
+  /* Program will NOT break execution when it runs on Unauthorized hardware.
+  It is REQUIRED for the user to catch the authorized and mess with the
+  algorythm producing the key. Having no feedback on weather a key is valid or
+  not makes it harder for bruteforce attack to work*/
+
+  if (authorized != true){
+    printf("Not Authorized\n");
+    ret = ret << 3;
+  }
+  return (uint64_t)(ret);
 }
 
 /* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
