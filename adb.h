@@ -20,6 +20,12 @@
  #include <inttypes.h>
  #include <sys/ptrace.h>
 
+ #if __x86_64__
+ #define RAM_ADDR_SZ uint64_t
+ #else
+ #define RAM_ADDR_SZ uint32_t
+ #endif
+
  typedef enum adb_detection {
    NODEBUGGER = 0, ///< successfull return
    DEBUGGER   = 1, ///< error
@@ -40,7 +46,7 @@ uint8_t gb_det();
  * @return adb_detection_t (0) if nothing is detected 1 otherwise.
  *
  */
-uint8_t bp_det(uint64_t addr);
+uint8_t bp_det(RAM_ADDR_SZ addr);
 
 /**
  * Detect LV Preload. Used in conjuction with gb_det to dissalow overwriting

@@ -22,13 +22,13 @@ int main(int argc, char **argv)
   int16_t hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
- uint8_t btd = (bp_det((uint64_t)&hwinfo_add)+\
-                 bp_det((uint64_t)&soft_machine_id)+\
-                 bp_det((uint64_t)&sha1_from_en_buf_to_en_buff)+\
-                 bp_det((uint64_t)&hash_enc)+\
-                 bp_det((uint64_t)&hwinfo_add)+\
-                 bp_det((uint64_t)&encrypt_string)+\
-                 bp_det((uint64_t)&hwinfo_get_pl));
+ uint8_t btd = (bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                 bp_det((RAM_ADDR_SZ)&soft_machine_id)+\
+                 bp_det((RAM_ADDR_SZ)&sha1_from_en_buf_to_en_buff)+\
+                 bp_det((RAM_ADDR_SZ)&hash_enc)+\
+                 bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                 bp_det((RAM_ADDR_SZ)&encrypt_string)+\
+                 bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
   if (btd != 0) {
     printf("Warning Tampering Detected (bp)\n");
     permitted = false;

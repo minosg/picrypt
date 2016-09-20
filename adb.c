@@ -23,9 +23,9 @@
  }
 
  /* Detect breakpoint in fucntions */
- uint8_t bp_det(uint64_t addr)
+ uint8_t bp_det(RAM_ADDR_SZ addr)
  {
-   if ((*(volatile uint64_t *)((uint64_t)addr + 4) & 0xff) == 0xcc) {
+   if ((*(volatile RAM_ADDR_SZ *)((RAM_ADDR_SZ)addr + 4) & 0xff) == 0xcc) {
          return 1;
          exit(1);
    }
