@@ -131,13 +131,14 @@ def get_sha1(file_path):
 
 def gcc_compile(source,
                 output,
-                piver, protection="CARE_BEAR",
+                piver,
+                protection="CARE_BEAR",
                 hwid=None,
                 machid=None,
                 keyfile=None,
                 lhash=None,
                 fserial=None,
-                debug=None):
+                devel=None):
 
     protection_lvs = ["CARE_BEAR",
                       "SCRIPT_KIDDY",
@@ -167,14 +168,14 @@ def gcc_compile(source,
         hwd_text += '#define %s %s\n' % ("PROTECTION", protection)
     if lhash:
         hwd_text += '#define %s\n' % ("LONG_HASH")
-    if debug:
-        hwd_text += '#define %s\n' % ("DEBUG")
+    if devel:
+        hwd_text += '#define %s\n' % ("DEVEL")
     hwd_text += "#endif"
 
     with open(hwd, "w") as F:
         F.write(hwd_text)
     # Compile the binary
-    cmd = "make clean && make"
+    cmd = "make"
     ret = run(cmd)
     call("mv picrypt %s" % output, shell=True)
     print("Compiled %s" % output)
@@ -202,20 +203,25 @@ if __name__ == "__main__":
                         help="create double length password",
                         dest="lhash",
                         action="store_true")
+    parser.add_argument("--nobackup",
+                        "-n",
+                        help="Remove authorized_hardware.h and don't restore",
+                        dest="nobackup",
+                        action="store_true")
     parser.add_argument("--fake",
                         "-f",
                         help="Add a fake serial to detection method",
                         dest="fake_serial",
                         action="store")
-    parser.add_argument("--debug",
+    parser.add_argument("--devel",
                         "-d",
                         help="Executable will print out auth failures",
-                        dest="debug",
+                        dest="devel",
                         action="store_true")
     parser.add_argument("--protection",
                         "-p",
                         help="Set the protection level",
-                        default="CARE_BEAR",
+                        default="PEN_TESTER",
                         dest="protection",
                         action="store")
     usr_args = parser.parse_args()
@@ -246,11 +252,15 @@ if __name__ == "__main__":
             print("Using Source file %s" % source)
             run("mkdir -p %s" % compile_dir)
             run("rm -rf %s/./*" % compile_dir)
+
             # Make a backup of hwd_backup
             try:
                 shutil.move(hwd, hwd_backup)
                 backup_present = True
             except IOError:
+                backup_present = False
+            # Inverting the logic ensures .h file will be erased
+            if usr_args.nobackup:
                 backup_present = False
             for rev, ser, mid, key_f in serials:
                 b_name = "picrypt_%s" % ser
@@ -264,7 +274,7 @@ if __name__ == "__main__":
                             keyfile=key_f,
                             lhash=usr_args.lhash,
                             fserial=usr_args.fake_serial,
-                            debug=usr_args.debug)
+                            devel=usr_args.devel)
                 # Add the serial to the authorized header
 
             # cleanup
