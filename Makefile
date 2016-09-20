@@ -50,6 +50,12 @@ adb.o: adb.c adb.h
 namescrabbler_done: namescrabbler
 	./namescrabbler
 
+install: picrypt
+	cp ./picrypt /usr/bin
+
+uninstall:
+	rm -f /usr/bin/picrypt
+
 clean :
 	rm -f *.o
 	rm -f *.h.gch
