@@ -17,7 +17,8 @@ SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
 
-picrypt : ppprocessor strhide.o hwinfo.o usr_set_keygen.o adb.o picrypt_main.o picrypt.o
+picrypt :namescrabbler_done ppprocessor strhide.o hwinfo.o usr_set_keygen.o\
+adb.o picrypt_main.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o adb.o \
 		-o picrypt $(SSLFLAGS)
 
@@ -46,7 +47,12 @@ usr_set_keygen.o :usr_set_keygen.c picrypt.h authorized_hwd.h
 adb.o: adb.c adb.h
 	$(CC) $(CFLAGS) adb.c
 
+namescrabbler_done: namescrabbler
+	./namescrabbler
+
 clean :
 	rm -f *.o
 	rm -f *.h.gch
 	rm -f authorized_hwd_e.*
+	rm -f namescrabbler_done
+	git reset --hard
