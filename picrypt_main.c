@@ -28,7 +28,7 @@ int main(int argc, char **argv)
                              bp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
                              bp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
                              bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
-                             bp_det((RAM_ADDR_SZ)&encrypt_string)+\
+                             bp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
                              bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
   if (pc_brpoint_det_d != 0) {
     #ifdef DEVEL

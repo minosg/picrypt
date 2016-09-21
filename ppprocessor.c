@@ -16,5 +16,5 @@
 
 int main(int argc, const char *argv[])
 {
-  parse_header("authorized_hwd.h", "authorized_hwd_e.h");
+  sh_parse_header("authorized_hwd.h", "authorized_hwd_e.h");
 }

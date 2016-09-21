@@ -40,10 +40,10 @@
 #define _STRHT_ARR_LEN(a, s) ((uint16_t)((s) /sizeof(*(a)))) ///< Data entries
 
 /* Helper macros. DO NOT USE when input arguments are pointers */
-#define _STRHT_DECRPT_(e, d) decrypt_string((e),(d),sizeof((e)),sizeof((d)))
-#define _STRHT_ENCRPT_(s, e) encrypt_string((s),(e),sizeof((e)))
-#define _STRHT_CMP_(a, b) compare_encrypted_str((a),(b),sizeof((a)),sizeof((b)))
-#define _STRHT_ARR2HDR_(a, h) array_to_header((a),sizeof((a)),(h))
+#define _STRHT_DECRPT_(e, d) sh_decrypt_string((e),(d),sizeof((e)),sizeof((d)))
+#define _STRHT_ENCRPT_(s, e) sh_encrypt_string((s),(e),sizeof((e)))
+#define _STRHT_CMP_(a, b) sh_compare_encrypted_str((a),(b),sizeof((a)),sizeof((b)))
+#define _STRHT_ARR2HDR_(a, h) sh_array_to_header((a),sizeof((a)),(h))
 
 /**
  * Print byte contents of array
@@ -52,7 +52,7 @@
  * @param byte_size allocated size of array in bytes.
  *
  */
-void print_array(int16_t *array, const uint16_t byte_size);
+void sh_print_array(int16_t *array, const uint16_t byte_size);
 
 /**
  * Convert the payload of an encrypted buffer to a header file friendly format
@@ -63,7 +63,7 @@ void print_array(int16_t *array, const uint16_t byte_size);
  *
  * @return A pointer to the output buffer
  */
-char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff);
+char * sh_array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff);
 
 /**
  * Ecnryption function that hides a string inside a signed int array
@@ -73,7 +73,7 @@ char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff);
  * @param byte_size Size of buffer in bytes.
  *
  */
-void encrypt_string(char const *raw_string,
+void sh_encrypt_string(char const *raw_string,
                     int16_t *output,
                     const uint16_t byte_size);
 
@@ -88,7 +88,7 @@ void encrypt_string(char const *raw_string,
  *
  * @return The pointer to the char buffer containing the dectypted string
  */
-char* decrypt_string(int16_t const *encr_string,
+char* sh_decrypt_string(int16_t const *encr_string,
                      char *output,
                      const uint16_t ibuff_byte_size,
                      const uint16_t cbuff_byte_size);
@@ -104,7 +104,7 @@ char* decrypt_string(int16_t const *encr_string,
  *
  * @return True if strrings are equal False otherwise
  */
-bool compare_encrypted_str(int16_t *en_str_one,
+bool sh_compare_encrypted_str(int16_t *en_str_one,
                          int16_t *en_str_two,
                          const uint16_t bsize_str_one,
                          const uint16_t bsize_str_two);
@@ -117,5 +117,5 @@ bool compare_encrypted_str(int16_t *en_str_one,
 * @param fname_out File to be created after the modification.
 *
 */
-void parse_header(char const *fname_in, char const *fname_out);
+void sh_parse_header(char const *fname_in, char const *fname_out);
 #endif /* _STRHIDE_H_ */

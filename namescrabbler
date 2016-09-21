@@ -16,10 +16,10 @@ from random import randint
 from subprocess import call, Popen, PIPE
 from pprint import pprint
 
-methods = ["array_to_header",
-           "encrypt_string",
-           "decrypt_string",
-           "compare_encrypted_str",
+methods = ["sh_array_to_header",
+           "sh_encrypt_string",
+           "sh_decrypt_string",
+           "sh_compare_encrypted_str",
            "gb_det",
            "bp_det",
            "lv_det",
@@ -39,9 +39,9 @@ methods = ["array_to_header",
            "hash_low",
            "hash_high",
            "pc_validate_key",
-           "print_array",
+           "sh_print_array",
            "hwinfo_print",
-           "parse_header",
+           "sh_parse_header",
            "hwinfo_dealloc"]
 
 variables = ["pc_brpoint_det_d",

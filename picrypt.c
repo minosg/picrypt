@@ -108,7 +108,7 @@ char * pc_sha1_from_en_buf(int16_t const *fname,
 {
   /* Get the file path */
   char fname_d[strlen(FILE_SEED)+1];
-  decrypt_string(fname, fname_d, byte_size, sizeof(fname_d));
+  sh_decrypt_string(fname, fname_d, byte_size, sizeof(fname_d));
   return pc_sha1_from_file(fname_d, sha_hash);
 }
 
@@ -127,7 +127,7 @@ int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
   }
 
   /* During encryption one char is encoded as 4 bytes */
-  encrypt_string(sha_d, sha_buff, SHA_DIGEST_LENGTH*4);
+  sh_encrypt_string(sha_d, sha_buff, SHA_DIGEST_LENGTH*4);
   return sha_buff;
 }
 #endif
@@ -152,7 +152,7 @@ int16_t * pc_hash_enc(hwd_nfo_param_t * hwinfo,
 {
   char tmp_hash_bf[HBUFF_SZ+1];
   pc_hash_str(hwinfo, tmp_hash_bf);
-  encrypt_string(tmp_hash_bf, hash_buffer_e, byte_size);
+  sh_encrypt_string(tmp_hash_bf, hash_buffer_e, byte_size);
   return hash_buffer_e;
 }
 

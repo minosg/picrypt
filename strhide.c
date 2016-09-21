@@ -21,14 +21,14 @@
 #include "strhide.h"
 
 /* Print buffer contents in human readable format */
-void print_array(int16_t *array, const uint16_t byte_size)
+void sh_print_array(int16_t *array, const uint16_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
     printf("Byte %d -> 0x%04X\n", i, array[i]);
   }
 }
 
-char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
+char * sh_array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
 {
   uint16_t idx = 1;
 
@@ -48,7 +48,7 @@ char * array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
 }
 
 /* Encrypt a string to a Pre-Allocated buffer */
-void encrypt_string(char const *raw_string,
+void sh_encrypt_string(char const *raw_string,
                     int16_t *output,
                     const uint16_t byte_size)
 {
@@ -87,7 +87,7 @@ void encrypt_string(char const *raw_string,
 }
 
 /* Decrypt a string to a Pre-Allocated buffer */
-char* decrypt_string(int16_t const *encr_string,
+char* sh_decrypt_string(int16_t const *encr_string,
                      char *output,
                      const uint16_t ibuff_byte_size,
                      const uint16_t cbuff_byte_size)
@@ -117,7 +117,7 @@ char* decrypt_string(int16_t const *encr_string,
   return output;
 }
 
-bool compare_encrypted_str(int16_t *en_str_one,
+bool sh_compare_encrypted_str(int16_t *en_str_one,
                           int16_t *en_str_two,
                           const uint16_t bsize_str_one,
                           const uint16_t bsize_str_two)
@@ -136,7 +136,7 @@ bool compare_encrypted_str(int16_t *en_str_one,
 }
 
 /* Open a header file and encrtypt all string hash defines */
-void parse_header(char const *fname_in, char const *fname_out)
+void sh_parse_header(char const *fname_in, char const *fname_out)
 {
   char * line = NULL;
   char hashdef[8];
