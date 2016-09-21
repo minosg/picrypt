@@ -148,7 +148,7 @@ int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
+char * pc_hash_str(hw_msg_page_t * hwinfo, char * hash_buffer);
 
 /**
  * User Key generation Routine that returns a pointer to the encrypted buffer
@@ -159,7 +159,7 @@ char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
  *
  * @return uint16_t Pointer to buffer,
  */
-int16_t * pc_hash_enc(hwd_nfo_param_t * hwinfo,
+int16_t * pc_hash_enc(hw_msg_page_t * hwinfo,
                    int16_t * hash_buffer_e,
                    const uint16_t byte_size);
 
@@ -199,7 +199,7 @@ void pc_help(const char* prgm);
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-uint64_t hash_low(hwd_nfo_param_t * hwinfo);
+uint64_t hash_low(hw_msg_page_t * hwinfo);
 
 /**
  * User Key generation Routine for the high bits of the hash
@@ -208,6 +208,6 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo);
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-uint64_t hash_high(hwd_nfo_param_t * hwinfo);
+uint64_t hash_high(hw_msg_page_t * hwinfo);
 
 #endif /* _PICRYPT_H_ */

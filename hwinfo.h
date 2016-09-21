@@ -25,7 +25,7 @@
    Enums
 ************************/
 
-typedef enum hwd_nfo_type {
+typedef enum hw_data_type {
   HW_EMPTY         = 0, ///< No HW info
   HW_SERIAL        = 1, ///< CPU Serial
   HW_MACHINE_ID    = 2, ///< Software Machine ID
@@ -33,7 +33,7 @@ typedef enum hwd_nfo_type {
   HW_DNGLE_KEY     = 4, ///< CPU Serial, Software, and Random File SHA
   HW_AUTHORIZED    = 5, ///< Pass the result of the hw detection tests.
   HW_ANTITAMPER    = 6  ///< Pass the result of Anti Tamper detection tests.
-} hwd_nfo_type_t;
+} hw_data_type_t;
 
 /**
  * Return Status
@@ -48,12 +48,12 @@ typedef enum hw_ret_status {
 /************************
           Struct
 ************************/
-typedef struct hwd_nfo_param {
-    hwd_nfo_type_t          hw_type;
+typedef struct hw_msg_page {
+    hw_data_type_t          hw_type;
     void *                  hw_payload;
     uint8_t                 hw_entries;
-    struct hwd_nfo_param *  next;
-} hwd_nfo_param_t;
+    struct hw_msg_page *  next;
+} hw_msg_page_t;
 
 /************************
          Methods
@@ -65,7 +65,7 @@ typedef struct hwd_nfo_param {
  *
  * @return A pointer to the first page of the allocated linked list
  */
-hwd_nfo_param_t * hwinfo_init();
+hw_msg_page_t * hw_msg_init();
 
 /**
  * Add an entry to the harware info dataset.
@@ -80,8 +80,8 @@ hwd_nfo_param_t * hwinfo_init();
  *
  * @return HW_SUCESS if successfull error number if failed
  */
-hw_ret_status_t hwinfo_add(hwd_nfo_param_t * hw_info_struct,
-                             hwd_nfo_type_t type,
+hw_ret_status_t hw_msg_add(hw_msg_page_t * hw_info_struct,
+                             hw_data_type_t type,
                              void * hw_payload);
 
 /**
@@ -92,8 +92,8 @@ hw_ret_status_t hwinfo_add(hwd_nfo_param_t * hw_info_struct,
  *
  * @return (void *) of the allocated buffer if entry exists or NULL if not
  */
-void * hwinfo_get_pl(hwd_nfo_param_t * hw_info_struct,
-                     hwd_nfo_type_t type);
+void * hw_get(hw_msg_page_t * hw_info_struct,
+                     hw_data_type_t type);
 
 /**
  * Delete an entry of the data structure and free the alocated memory
@@ -103,8 +103,8 @@ void * hwinfo_get_pl(hwd_nfo_param_t * hw_info_struct,
  *
  * @return hw_ret_status_t based on status.
  */
-hw_ret_status_t hwinfo_delete(hwd_nfo_param_t ** hw_info_struct,
-                              hwd_nfo_type_t type);
+hw_ret_status_t hw_delete(hw_msg_page_t ** hw_info_struct,
+                              hw_data_type_t type);
 
 /**
  * Delete every single memory block allocated to the data structure.
@@ -113,7 +113,7 @@ hw_ret_status_t hwinfo_delete(hwd_nfo_param_t ** hw_info_struct,
  *
  * @return hw_ret_status_t based on status.
  */
-void hwinfo_dealloc(hwd_nfo_param_t * hw_info_struct);
+void hw_free(hw_msg_page_t * hw_info_struct);
 
 /**
  * Print out a hardware info data structure.
@@ -121,6 +121,6 @@ void hwinfo_dealloc(hwd_nfo_param_t * hw_info_struct);
  * @param hw_info_struct Point of hwinfo structure to store the data.
  *
  */
-void hwinfo_print(hwd_nfo_param_t * hw_info_struct);
+void hw_cat(hw_msg_page_t * hw_info_struct);
 
 #endif /* _HWINFO_H_ */

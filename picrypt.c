@@ -133,7 +133,7 @@ int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
 #endif
 
 /* Return the hash in printable string format (Do not edit) */
-char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
+char * pc_hash_str(hw_msg_page_t * hwinfo, char * hash_buffer)
 {
   uint64_t LB = hash_low(hwinfo);
   #ifdef LONG_HASH
@@ -146,7 +146,7 @@ char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
 }
 
 /* Return the hash in printable string format (Do not edit) */
-int16_t * pc_hash_enc(hwd_nfo_param_t * hwinfo,
+int16_t * pc_hash_enc(hw_msg_page_t * hwinfo,
                    int16_t * hash_buffer_e,
                    const uint16_t byte_size)
 {
@@ -185,17 +185,17 @@ bool pc_validate_key(char const *key)
 
   /* Create a temporary hardware_info structure and add the serial */
   uint64_t ukey = (uint64_t)strtoull(key, NULL, 16);
-  hwd_nfo_param_t * tmp_data = hwinfo_init();
-  hwinfo_add(tmp_data, HW_SERIAL, &ukey);
+  hw_msg_page_t * tmp_data = hw_msg_init();
+  hw_msg_add(tmp_data, HW_SERIAL, &ukey);
   /* Assume it is authorized, or it will fail user anti-tamper */
   bool authorized = true;
-  hwinfo_add(tmp_data, HW_AUTHORIZED, (bool *)(&authorized));
+  hw_msg_add(tmp_data, HW_AUTHORIZED, (bool *)(&authorized));
 
   /* Calculate the hash */
   pc_hash_str(tmp_data, hash_key_d);
 
   /* Free the memory */
-  hwinfo_dealloc(tmp_data);
+  hw_free(tmp_data);
 
   /* Compare the strings and square to get rid of the negatives */
   int16_t r = strcmp(hash_key_d, key);

@@ -19,24 +19,24 @@ the result of your method */
 #include "picrypt.h"
 
 /* Calculate the low bits of the hash */
-uint64_t hash_low(hwd_nfo_param_t * hwinfo)
+uint64_t hash_low(hw_msg_page_t * hwinfo)
 {
   /* Uncomment any of the fields that you need to calcuate the hash key
-  const bool *authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
-  const bool anti-tamper = *(bool *)hwinfo_get_pl(hwinfo, HW_ANTITAMPER);
-  const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
-  const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
-  const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
+  const bool *authorized = *(bool *)hw_get(hwinfo, HW_AUTHORIZED);
+  const bool anti-tamper = *(bool *)hw_get(hwinfo, HW_ANTITAMPER);
+  const uint64_t serial = *(uint64_t *)hw_get(hwinfo, HW_SERIAL);
+  const char *machine_id = (char *)hw_get(hwinfo, HW_MACHINE_ID);
+  const char *sha =  (char *)hw_get(hwinfo, HW_SHA1);
   */
 
-  const bool antitamper = *(bool *)hwinfo_get_pl(hwinfo, HW_ANTITAMPER);
+  const bool antitamper = *(bool *)hw_get(hwinfo, HW_ANTITAMPER);
   if (antitamper == true) {
     printf("Anti-Tamper Warning, there is your fake-serial: \n");
     return (uint64_t)(123);
   }
 
   uint8_t ret = 1;
-  const bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
+  const bool authorized = *(bool *)hw_get(hwinfo, HW_AUTHORIZED);
 
   /* Program will NOT break execution when it runs on Unauthorized hardware.
   It is REQUIRED for the user to catch the authorized and mess with the
@@ -51,6 +51,6 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 }
 
 /* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
-uint64_t hash_high(hwd_nfo_param_t * hwinfo){
+uint64_t hash_high(hw_msg_page_t * hwinfo){
   return (uint64_t)(2);
 }

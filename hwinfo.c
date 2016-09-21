@@ -14,10 +14,10 @@
 #include "hwinfo.h"
 
 /* Initialize empty strucutre */
-hwd_nfo_param_t * hwinfo_init()
+hw_msg_page_t * hw_msg_init()
 {
-  hwd_nfo_param_t * head = NULL;
-  head = malloc(sizeof(hwd_nfo_param_t));
+  hw_msg_page_t * head = NULL;
+  head = malloc(sizeof(hw_msg_page_t));
   if (head == NULL) {
     printf("Could not allocate memory\n");
     return NULL;
@@ -30,13 +30,13 @@ hwd_nfo_param_t * hwinfo_init()
 }
 
 /* Add entry to structure */
-hw_ret_status_t hwinfo_add(hwd_nfo_param_t * hw_info_struct,
-                           hwd_nfo_type_t type,
+hw_ret_status_t hw_msg_add(hw_msg_page_t * hw_info_struct,
+                           hw_data_type_t type,
                            void * hw_payload)
 {
     /* Get a moving cursor */
-    hwd_nfo_param_t * last = hw_info_struct;;
-    hwd_nfo_param_t * seek = hw_info_struct;
+    hw_msg_page_t * last = hw_info_struct;;
+    hw_msg_page_t * seek = hw_info_struct;
     uint8_t page_no = hw_info_struct->hw_entries;
 
     /* Iterate through the linked list and increment number of elements */
@@ -52,7 +52,7 @@ hw_ret_status_t hwinfo_add(hwd_nfo_param_t * hw_info_struct,
         last->hw_type=type;
         last->hw_payload=hw_payload;
     } else {
-      last->next = malloc(sizeof(hwd_nfo_param_t));
+      last->next = malloc(sizeof(hw_msg_page_t));
       if (last->next == NULL) return HW_MEM;
       last->next->hw_type=type;
       last->next->hw_payload=hw_payload;
@@ -64,9 +64,9 @@ hw_ret_status_t hwinfo_add(hwd_nfo_param_t * hw_info_struct,
 
 
 /* Get payload from entry label */
-void * hwinfo_get_pl(hwd_nfo_param_t * hw_info_struct, hwd_nfo_type_t type)
+void * hw_get(hw_msg_page_t * hw_info_struct, hw_data_type_t type)
 {
-  hwd_nfo_param_t * current = hw_info_struct;
+  hw_msg_page_t * current = hw_info_struct;
   while (current != NULL){
     if (current->hw_type==type) {
       return current->hw_payload;
@@ -77,9 +77,9 @@ void * hwinfo_get_pl(hwd_nfo_param_t * hw_info_struct, hwd_nfo_type_t type)
 }
 
 /* Print all elements of the structure */
-void hwinfo_print(hwd_nfo_param_t * hw_info_struct)
+void hw_cat(hw_msg_page_t * hw_info_struct)
 {
-  hwd_nfo_param_t * current = hw_info_struct;
+  hw_msg_page_t * current = hw_info_struct;
   for(int i = 0;i < hw_info_struct->hw_entries;i++) {
     printf("\nPage: %d\n",i);
     printf("Entries: %d\n",current->hw_entries);
@@ -130,10 +130,10 @@ void hwinfo_print(hwd_nfo_param_t * hw_info_struct)
 }
 
 /* Delete single entry */
-hw_ret_status_t hwinfo_delete(hwd_nfo_param_t ** hw_info_struct,
-                              hwd_nfo_type_t type)
+hw_ret_status_t hw_delete(hw_msg_page_t ** hw_info_struct,
+                              hw_data_type_t type)
 {
-  hwd_nfo_param_t * current = *hw_info_struct;
+  hw_msg_page_t * current = *hw_info_struct;
 
   while (current != NULL){
      /* If the first element is the one we delete */
@@ -161,10 +161,10 @@ hw_ret_status_t hwinfo_delete(hwd_nfo_param_t ** hw_info_struct,
 }
 
 /* Delete Everything */
-void hwinfo_dealloc(hwd_nfo_param_t * hw_info_struct)
+void hw_free(hw_msg_page_t * hw_info_struct)
 {
-  hwd_nfo_param_t * current = hw_info_struct;
-  hwd_nfo_param_t * following = hw_info_struct;
+  hw_msg_page_t * current = hw_info_struct;
+  hw_msg_page_t * following = hw_info_struct;
   while (current != NULL) {
       following = current->next;
       free(current);

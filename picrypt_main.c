@@ -18,18 +18,18 @@ int main(int argc, char **argv)
 {
   bool pc_flag_permitted_d = true;
   bool pc_flag_antitamper_d = false;
-  hwd_nfo_param_t * pc_hardware_info_d = hwinfo_init();
+  hw_msg_page_t * pc_hardware_info_d = hw_msg_init();
   char pc_hash_key_d[HBUFF_SZ+1];
   int16_t pc_hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
- uint8_t pc_brpoint_det_d = (ab_breakp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+ uint8_t pc_brpoint_det_d = (ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
                              ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
                              ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
                              ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
                              ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
+                             ab_breakp_det((RAM_ADDR_SZ)&hw_get));
   if (pc_brpoint_det_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   }
 
   /* Add the result of anti-tamper detection to the structure */
-  hwinfo_add(pc_hardware_info_d, HW_ANTITAMPER, (bool *)&pc_flag_antitamper_d);
+  hw_msg_add(pc_hardware_info_d, HW_ANTITAMPER, (bool *)&pc_flag_antitamper_d);
   if (pc_flag_antitamper_d) {
 
     /* Call the user method and let him handle with antitamper without
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   uint64_t pc_serial_hd_d = (uint64_t)strtoull(pc_hardware_id_d, NULL, 16);
 
   /* Add the data to the hw_info structure */
-  hwinfo_add(pc_hardware_info_d, HW_SERIAL, &pc_serial_rt_d);
+  hw_msg_add(pc_hardware_info_d, HW_SERIAL, &pc_serial_rt_d);
 
   if ((PROTECTION >= SCRIPT_KIDDY) && (pc_serial_hd_d != pc_serial_rt_d)) {
     #ifdef DEVEL
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   pc_soft_machine_id(pc_machine_id_rt_d);
 
   /* Add the machine-id to the hw_info structure */
-  hwinfo_add(pc_hardware_info_d, HW_MACHINE_ID, pc_machine_id_rt_d);
+  hw_msg_add(pc_hardware_info_d, HW_MACHINE_ID, pc_machine_id_rt_d);
   _STRHT_ENCRPT_(pc_machine_id_rt_d, pc_machine_id_rt_e);
 
   if (PROTECTION >= ARCH_USER) {
@@ -132,12 +132,12 @@ int main(int argc, char **argv)
                                   sizeof(pc_file_seed_hd_e),
                                   pc_file_sha_rt_e) == NULL) {
       pc_flag_permitted_d = false;
-      hwinfo_add(pc_hardware_info_d, HW_SHA1, (char *)"Key-File is Missing");
+      hw_msg_add(pc_hardware_info_d, HW_SHA1, (char *)"Key-File is Missing");
   } else {
 
   /* Add the sha1 to the hw_info structure */
   _STRHT_DECRPT_(pc_file_sha_rt_e, pc_sha_hash_rt_d);
-  hwinfo_add(pc_hardware_info_d, HW_SHA1, pc_sha_hash_rt_d);
+  hw_msg_add(pc_hardware_info_d, HW_SHA1, pc_sha_hash_rt_d);
   }
 
   if (PROTECTION >= PEN_TESTER) {
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
   #endif
 
   /* Add the permitted variable to the data structure */
-  hwinfo_add(pc_hardware_info_d, HW_AUTHORIZED,  (bool *)&pc_flag_permitted_d);
+  hw_msg_add(pc_hardware_info_d, HW_AUTHORIZED,  (bool *)&pc_flag_permitted_d);
 
   /* Calculate the password hash */
   pc_hash_enc(pc_hardware_info_d, pc_hash_key_e, sizeof(pc_hash_key_e));
@@ -196,13 +196,13 @@ int main(int argc, char **argv)
     printf("Hash Key:     %s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
     #endif
     #ifdef MACHINE_ID
-    printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(pc_hardware_info_d,
+    printf("Machine-id:   %s\n",(char *)hw_get(pc_hardware_info_d,
                                                       HW_MACHINE_ID));
     #endif
     #if defined(FILE_SEED) && defined(FILE_SHA1)
     printf("KeyFile:      %s\n", _STRHT_DECRPT_(pc_file_seed_hd_e,
                                                 file_seed_hd_d));
-    printf("SHA1 Key:     %s\n", (char *)hwinfo_get_pl(pc_hardware_info_d,
+    printf("SHA1 Key:     %s\n", (char *)hw_get(pc_hardware_info_d,
                                                        HW_SHA1));
 
     #endif
