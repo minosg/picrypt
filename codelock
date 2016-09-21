@@ -3,6 +3,14 @@
 """codelock.py:  Helper utility that encrypts a directory requested by the
 user.It assumes a pre compiled picrypt binary is located at /usr/bin/picrypt"""
 
+from __future__ import print_function
+import os
+import re
+import sys
+import time
+from subprocess import call, Popen, PIPE
+import argparse
+
 __author__ = "Minos Galanakis"
 __license__ = "GPL v3"
 __version__ = "0.0.1"
@@ -10,11 +18,27 @@ __email__ = "minos197@gmail.com"
 __project__ = "PiCrypt"
 __date__ = "01-07-2016"
 
-import os
-import re
-import sys
-from subprocess import call, Popen, PIPE
+# Templates for stat-up methods
+rcloc_tpl = (r"\\\nsleep 5\necho \$(/usr/bin/picrypt --ramkey) | "
+             r"ecryptfs-add-passphrase --fnek > /dev/null\n"
+             r"/bin/mount -t ecryptfs %(mdir)s  %(mdir)s >/dev/null\n"
+             r"sleep 5 && rm -f /tmp/lock.key\n")
 
+sysd_tpl = ("[Unit]\n"
+            "Description=PiCrypt Key Creator\n"
+            "DefaultDependencies=no\n"
+            "After=sysinit.target\n\n"
+            "[Install]\n"
+            "WantedBy=multi-user.target\n\n"
+            "[Service]\n"
+            "TimeoutStartSec=0\n"
+            "Type=oneshot\n"
+            "ExecStart=/bin/sh -c '/bin/echo $(/usr/bin/picrypt --ramkey) |"
+            " /usr/bin/ecryptfs-add-passphrase --fnek > /dev/null'\n"
+            "ExecStart=/bin/sh -c 'mount -t ecryptfs  %(mdir)s  %(mdir)s'\n"
+            "ExecStart=/bin/sh -c '/bin/sleep 5 && rm -r /tmp/lock.key'")
+
+systemd_svc_file = "/lib/systemd/system/picrypt.service"
 
 def run(cmd):
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -25,17 +49,44 @@ def run(cmd):
         raise RuntimeError(err)
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) == 2 else ""
-    target = os.path.abspath(target)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dir",
+                        "-d",
+                        help="Select the directory that will be locked",
+                        dest="target",
+                        action="store")
+    parser.add_argument("--systemd",
+                        "-s",
+                        help="Add hooks to systemd instead of rc.local",
+                        dest="systemd",
+                        default=False,
+                        action="store_true")
+
+    usr_args = parser.parse_args()
+    # Verify the unlock program exists.
+    if not os.path.isfile("/usr/bin/picrypt"):
+        print("Make sure picrypt is located at /usr/bin/picrypt")
+        sys.exit(1)
 
     # If the argument is not there
-    if len(sys.argv) != 2:
+    if not usr_args.target:
         print("Target directory not specified")
-        print("Usage: codelock /opt/yourdir")
+        print("\tUsage: codelock /opt/yourdir")
         sys.exit(1)
-    elif os.path.isdir(target) and os.listdir(target):
+    else:
+        # Convert to absolute path
+        target = os.path.abspath(usr_args.target)
+        if not os.path.isdir(target):
+            print("Directory %s does not exist." % target)
+            sys.exit(1)
 
+    # If dirctory is not empty
+    if os.listdir(target):
         print("Copying files to temporary directory")
+        print("WARNING!. This is a RAM limited operation and will fail\n if"
+              "size of data in %s is greater than memory." % target)
+        time.sleep(3)
+
         # Make a working directory
         run("mkdir -p /tmp/codelock")
 
@@ -106,12 +157,19 @@ if __name__ == "__main__":
             F.write(sig+"\n")
         print("Created /root/.ecryptfs/sig-cache.txt")
 
-        # Add the entry to fstab
-        run((r'sed -i "/fi/a\\\nsleep 5\n\necho \$(/usr/bin/picrypt --ramkey)'
-            r' | ecryptfs-add-passphrase --fnek > /dev/null\n/bin/mount -t '
-             r'ecryptfs %(mdir)s  %(mdir)s >/dev/null\nsleep 5\n'
-             r'rm -f /tmp/lock.key" /etc/rc.local') % {"mdir": target})
-        print("Added rc.local entry")
+    # Add the entry to fstab
+    if not usr_args.systemd:
+        rclocal = rcloc_tpl % {"mdir": target}
+        cmd = r'sed -i "/fi/a\%s" /etc/rc.local' % rclocal
+        run(cmd)
+        print("Added rc.local boot entry")
+    else:
+        systemd = sysd_tpl % {"mdir": target}
+        with open(systemd_svc_file, "w") as F:
+            F.write(sysd_tpl % {"mdir": target})
+        cmd = r'systemctl daemon-reload && systemctl enable picrypt'
+        run(cmd)
+        print("Added Systemd boot entry")
 
         # Cleanup
         run("rm -rf /tmp/codelock")
