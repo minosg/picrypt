@@ -54,21 +54,21 @@
 /**
  * Lock Levels
  */
-typedef enum lock_level {
+typedef enum pc_lock_level {
   CARE_BEAR     = 0, ///< No Checks
   SCRIPT_KIDDY  = 1, ///< Only CPU Serial Check
   ARCH_USER     = 2, ///< CPU Serial and Software Check
   PEN_TESTER    = 3, ///< CPU Serial, Software, and Random File SHA
   TIN_FOIL_HAT  = 4, ///< Everything and a handrware dongle key
-} lock_level_t;
+} pc_lock_level;
 
 /**
  * Return Status
  */
-typedef enum ret_status {
+typedef enum pc_ret_status {
   SUCESS = 0, ///< successfull return
   FAIL   = 1, ///< error
-} ret_status_t;
+} pc_ret_status_t;
 
 
 /************************
