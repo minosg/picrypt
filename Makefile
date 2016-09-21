@@ -13,14 +13,20 @@
 
 CC=gcc
 CFLAGS=-c -Wall -std=c99 -s
+CFLAGS_DBG=-c -Wall -std=c99 -g
 SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
 
-picrypt :namescrabbler_done ppprocessor strhide.o hwinfo.o usr_set_keygen.o\
+picrypt :namescrabbler_done ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
 adb.o picrypt_main.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o adb.o \
 		-o picrypt $(SSLFLAGS)
+
+devel: ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
+adb.o picrypt_main_devel.o picrypt.o
+	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main_devel.o picrypt.o \
+	adb.o -o picrypt $(SSLFLAGS)
 
 ppprocessor : 	ppprocessor.o strhide.o
 			$(CC) ppprocessor.o strhide.o -o ppprocessor
@@ -28,6 +34,10 @@ ppprocessor : 	ppprocessor.o strhide.o
 
 picrypt_main.o : picrypt_main.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) picrypt_main.c
+
+picrypt_main_devel.o : picrypt_main.c picrypt.h authorized_hwd.h
+	sed -i "s://#define DEVEL:#define DEVEL:g" authorized_hwd.h
+	$(CC) $(CFLAGS_DBG) picrypt_main.c -o picrypt_main_devel.o
 
 picrypt.o :  picrypt.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) picrypt.c
@@ -61,4 +71,3 @@ clean :
 	rm -f *.h.gch
 	rm -f authorized_hwd_e.*
 	rm -f namescrabbler_done
-	git reset --hard
