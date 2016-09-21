@@ -80,7 +80,7 @@ typedef enum ret_status {
  *
  * @return 64Bit Unsigned Integer Representing PI's serial number
  */
-uint64_t pi_serial();
+uint64_t pc_pi_serial();
 
 /**
  * Copies a string slice from a file to an initialized buffer
@@ -92,7 +92,7 @@ uint64_t pi_serial();
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-void string_slice_from_file(char const *fname,
+void pc_string_slice_from_file(char const *fname,
                             const uint32_t offset,
                             const uint32_t len,
                             char *buffer);
@@ -102,7 +102,7 @@ void string_slice_from_file(char const *fname,
  * @param ret_buff Pre-initialized buffer to copy the machine id into
  *
  */
-void soft_machine_id(char *ret_buff);
+void pc_soft_machine_id(char *ret_buff);
 
 /**
  * Generate sha1 hash from string input file path
@@ -112,7 +112,7 @@ void soft_machine_id(char *ret_buff);
  *
  * @return pointer to storage string buffer.
  */
-char * sha1_from_file(char * fname, char *sha_hash);
+char * pc_sha1_from_file(char * fname, char *sha_hash);
 
 /**
  * Generate sha1 hash from filename that is stored in a strhide encoded buffer
@@ -123,7 +123,7 @@ char * sha1_from_file(char * fname, char *sha_hash);
  *
  * @return sha1 string.
  */
-char * sha1_from_en_buf(int16_t const *fname,
+char * pc_sha1_from_en_buf(int16_t const *fname,
                         const uint16_t byte_size,
                         char *sha_hash);
 
@@ -136,7 +136,7 @@ char * sha1_from_en_buf(int16_t const *fname,
  *
  * @return The sha_buff pointer.
  */
-int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
+int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
                                       const uint16_t byte_size,
                                       int16_t *sha_buff);
 
@@ -148,7 +148,7 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
  *
  * @return 64Bit Unsigned Integer for the encryption key
  */
-char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
+char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
 
 /**
  * User Key generation Routine that returns a pointer to the encrypted buffer
@@ -159,7 +159,7 @@ char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer);
  *
  * @return uint16_t Pointer to buffer,
  */
-int16_t * hash_enc(hwd_nfo_param_t * hwinfo,
+int16_t * pc_hash_enc(hwd_nfo_param_t * hwinfo,
                    int16_t * hash_buffer_e,
                    const uint16_t byte_size);
 
@@ -170,7 +170,7 @@ int16_t * hash_enc(hwd_nfo_param_t * hwinfo,
  *
  */
 
-void ram_key(const char * hash_key);
+void pc_ram_key(const char * hash_key);
 
 /**
  * Check a hash againist the calcuated hardware hash
@@ -180,16 +180,16 @@ void ram_key(const char * hash_key);
  * @return True if key matches
  */
 
-bool validate_key(char const *key);
+bool pc_validate_key(char const *key);
 
 /**
- * Print Help Menu
+ * Print pc_help Menu
  *
  * @param serial integer represenation of the PI CPU Serial Number.
  *
  */
 
-void help(const char* prgm);
+void pc_help(const char* prgm);
 
 
 /**

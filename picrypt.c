@@ -19,15 +19,15 @@
 \**************************/
 
 /* Get the CPU serial and convert it to an integer */
-uint64_t pi_serial()
+uint64_t pc_pi_serial()
 {
   char ser_buffer[CPU_SER_SIZE+1];
-  string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, ser_buffer);
+  pc_string_slice_from_file(CPU_FILE, CPU_SER_OFFSET, CPU_SER_SIZE, ser_buffer);
   return (uint64_t)strtoull(ser_buffer, NULL, 16);
 }
 
 /* Open a file and read a substring into a buffer */
-void string_slice_from_file(char const *fname,
+void pc_string_slice_from_file(char const *fname,
                             const uint32_t offset,
                             const uint32_t byte_size,
                             char *buffer)
@@ -52,15 +52,15 @@ void string_slice_from_file(char const *fname,
 }
 
 /* Copy the software machine id string from file to an initialized buffer */
-void soft_machine_id(char *ret_buff)
+void pc_soft_machine_id(char *ret_buff)
 {
-  string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
+  pc_string_slice_from_file(MACHINE_ID_FILE, 0, MACHINE_ID_SIZE, ret_buff);
   return;
 }
 #if defined(FILE_SEED) && defined(FILE_SHA1)
 
 /* Calcualte SHA1 from a valid file path */
-char * sha1_from_file(char * fname, char *sha_hash)
+char * pc_sha1_from_file(char * fname, char *sha_hash)
 {
   FILE *fptr;
   unsigned char sha1_buffer[SHA_DIGEST_LENGTH];
@@ -102,19 +102,19 @@ char * sha1_from_file(char * fname, char *sha_hash)
   return sha_hash;
 }
 /* Calculate SHA1 from a file path that is encryted using strhide */
-char * sha1_from_en_buf(int16_t const *fname,
+char * pc_sha1_from_en_buf(int16_t const *fname,
                         const uint16_t byte_size,
                         char *sha_hash)
 {
   /* Get the file path */
   char fname_d[strlen(FILE_SEED)+1];
   decrypt_string(fname, fname_d, byte_size, sizeof(fname_d));
-  return sha1_from_file(fname_d, sha_hash);
+  return pc_sha1_from_file(fname_d, sha_hash);
 }
 
 /* Calculate SHA1 from a file path that is encryted using strhide and return
 it using the same encryption */
-int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
+int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
                                      const uint16_t byte_size,
                                      int16_t *sha_buff)
 {
@@ -122,7 +122,7 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
   char sha_d[(SHA_DIGEST_LENGTH*2)+1];
 
   /* If File does not exist exit */
-  if (sha1_from_en_buf(fname,byte_size, sha_d) == NULL){
+  if (pc_sha1_from_en_buf(fname,byte_size, sha_d) == NULL){
     return NULL;
   }
 
@@ -133,7 +133,7 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
 #endif
 
 /* Return the hash in printable string format (Do not edit) */
-char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
+char * pc_hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
 {
   uint64_t LB = hash_low(hwinfo);
   #ifdef LONG_HASH
@@ -146,17 +146,17 @@ char * hash_str(hwd_nfo_param_t * hwinfo, char * hash_buffer)
 }
 
 /* Return the hash in printable string format (Do not edit) */
-int16_t * hash_enc(hwd_nfo_param_t * hwinfo,
+int16_t * pc_hash_enc(hwd_nfo_param_t * hwinfo,
                    int16_t * hash_buffer_e,
                    const uint16_t byte_size)
 {
   char tmp_hash_bf[HBUFF_SZ+1];
-  hash_str(hwinfo, tmp_hash_bf);
+  pc_hash_str(hwinfo, tmp_hash_bf);
   encrypt_string(tmp_hash_bf, hash_buffer_e, byte_size);
   return hash_buffer_e;
 }
 
-void ram_key(const char * hash_key)
+void pc_ram_key(const char * hash_key)
 {
   FILE *fptr;
   fptr=fopen(RAM_FILE,"w");
@@ -176,7 +176,7 @@ void ram_key(const char * hash_key)
 }
 
 /* verify that a key is valid for this hardware */
-bool validate_key(char const *key)
+bool pc_validate_key(char const *key)
 {
   char hash_key_d[(strlen(key) * 2) + 1];
   if (strlen(key) > 8) {
@@ -192,7 +192,7 @@ bool validate_key(char const *key)
   hwinfo_add(tmp_data, HW_AUTHORIZED, (bool *)(&authorized));
 
   /* Calculate the hash */
-  hash_str(tmp_data, hash_key_d);
+  pc_hash_str(tmp_data, hash_key_d);
 
   /* Free the memory */
   hwinfo_dealloc(tmp_data);
@@ -202,8 +202,8 @@ bool validate_key(char const *key)
   return !(bool)(r*r);
 }
 
-/* Diplay a help menu */
-void help(const char* prgm)
+/* Diplay a pc_help menu */
+void pc_help(const char* prgm)
 {
   printf("<---------------------- Options -------------------------------->\n");
   #ifdef HWD_ID
