@@ -104,15 +104,19 @@ int main(int argc, char **argv)
   char file_seed_hd_d[(sizeof(file_seed_hd_e)/sizeof(int16_t)) +1];
   // char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
 
+
   /* Store the sensitive information */
-  sha1_from_en_buf_to_en_buff(file_seed_hd_e,
-                              sizeof(file_seed_hd_e),
-                              file_sha_rt_e);
+  if (sha1_from_en_buf_to_en_buff(file_seed_hd_e,
+                                  sizeof(file_seed_hd_e),
+                                  file_sha_rt_e) == NULL) {
+      permitted = false;
+      hwinfo_add(hardware_info, HW_SHA1, (char *)"Key-File is Missing");
+  } else {
 
   /* Add the sha1 to the hw_info structure */
   _STRHT_DECRPT_(file_sha_rt_e, sha_hash_rt_d);
-
   hwinfo_add(hardware_info, HW_SHA1, sha_hash_rt_d);
+  }
 
   if (PROTECTION >= PEN_TESTER) {
     if (!_STRHT_CMP_(file_sha_rt_e,file_sha_hd_e)) {

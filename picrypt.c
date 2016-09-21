@@ -36,7 +36,9 @@ void string_slice_from_file(char const *fname,
   // Open the file
   fptr=fopen(fname, "r");
   if(fptr==NULL) {
-    printf("Error Opening File!");
+    #ifdef DEVEL
+    printf("Error Opening File %s\n", fname);
+    #endif
     exit(1);
   }
   if (offset) {
@@ -66,9 +68,11 @@ char * sha1_from_file(char * fname, char *sha_hash)
   unsigned long fileLen;
 
   // Open the file
-  fptr=fopen("/etc/fstab", "rb");
+  fptr=fopen(fname, "rb");
   if (!fptr) {
-    fprintf(stderr, "Unable to open file %s", "name");
+    #ifdef DEVEL
+    fprintf(stderr, "Unable to open file %s\n", fname );
+    #endif
     return NULL;
   }
 
@@ -116,7 +120,11 @@ int16_t * sha1_from_en_buf_to_en_buff(int16_t const *fname,
 {
   /* Calcuate the sha1 */
   char sha_d[(SHA_DIGEST_LENGTH*2)+1];
-  sha1_from_en_buf(fname,byte_size, sha_d);
+
+  /* If File does not exist exit */
+  if (sha1_from_en_buf(fname,byte_size, sha_d) == NULL){
+    return NULL;
+  }
 
   /* During encryption one char is encoded as 4 bytes */
   encrypt_string(sha_d, sha_buff, SHA_DIGEST_LENGTH*4);
