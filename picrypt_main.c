@@ -14,6 +14,12 @@
 #include "authorized_hwd_e.h"
 #include "picrypt.h"
 
+/* Naming convention:
+ module_variable_hd/rt_e -> module where method/var is defined
+                            variable name,
+                            hardcoded/runtime
+                            encrypted/decrypted*/
+
 int main(int argc, char **argv)
 {
   bool pc_flag_permitted_d = true;
@@ -23,14 +29,15 @@ int main(int argc, char **argv)
   int16_t pc_hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
- uint8_t pc_brpoint_det_d = (ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
-                             ab_breakp_det((RAM_ADDR_SZ)&hw_get));
-  if (pc_brpoint_det_d != 0) {
+ uint8_t pc_bpoint_dt_d;
+ pc_bpoint_dt_d = (ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
+                   ab_breakp_det((RAM_ADDR_SZ)&hw_get));
+  if (pc_bpoint_dt_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
     #endif
@@ -110,10 +117,6 @@ int main(int argc, char **argv)
 
   #if defined(FILE_SEED) && defined(FILE_SHA1)
   /* Allocate the buffers that will hide the filename and seed */
-  /* Naming convention:
-   variable_hd/rt_e -> variable name,
-                       hash_defined/runtime
-                       encrypted/decrypted*/
   int16_t pc_file_seed_hd_e[] = FILE_SEED;
   int16_t pc_file_sha_hd_e[] = FILE_SHA1;
   int16_t pc_file_sha_rt_e[SHA_DIGEST_LENGTH * 2];
@@ -123,7 +126,7 @@ int main(int argc, char **argv)
   char pc_sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
 
   /* Decryption Buffers */
-  char file_seed_hd_d[(sizeof(pc_file_seed_hd_e)/sizeof(int16_t)) +1];
+  char file_seed_hd_d[(sizeof(pc_file_seed_hd_e) / sizeof(int16_t)) + 1];
   // char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
 
 
