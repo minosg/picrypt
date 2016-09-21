@@ -14,7 +14,7 @@
 #include "adb.h"
 
  /* Detect GDB presence */
- uint8_t gb_det()
+ uint8_t ab_gb_det()
  {
    if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0) {
      return 1;
@@ -23,7 +23,7 @@
  }
 
  /* Detect breakpoint in fucntions */
- uint8_t bp_det(RAM_ADDR_SZ addr)
+ uint8_t ab_breakp_det(RAM_ADDR_SZ addr)
  {
    if ((*(volatile RAM_ADDR_SZ *)((RAM_ADDR_SZ)addr + 4) & 0xff) == 0xcc) {
          return 1;
@@ -33,7 +33,7 @@
  }
 
  /* Detect lv preload */
- uint8_t lv_det()
+ uint8_t ab_lvpreld_det()
  {
    if(getenv("LD_PRELOAD")) return 1;
    return 0;

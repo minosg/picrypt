@@ -26,35 +26,35 @@
  #define RAM_ADDR_SZ uint32_t
  #endif
 
- typedef enum adb_detection {
+ typedef enum ad_detection {
    NODEBUGGER = 0, ///< successfull return
    DEBUGGER   = 1, ///< error
- } adb_detection_t;
+ } ad_detection_t;
 
  /**
   * Detect debuggers running ptrace
   *
-  * @return adb_detection_t (0) if nothing is detected 1 otherwise.
+  * @return ad_detection_t (0) if nothing is detected 1 otherwise.
   *
   */
-uint8_t gb_det();
+uint8_t ab_gb_det();
 
 /**
  * Detect breakpoint in fucntion
  *
  * @param Addr of method that breakpoint could be set
- * @return adb_detection_t (0) if nothing is detected 1 otherwise.
+ * @return ad_detection_t (0) if nothing is detected 1 otherwise.
  *
  */
-uint8_t bp_det(RAM_ADDR_SZ addr);
+uint8_t ab_breakp_det(RAM_ADDR_SZ addr);
 
 /**
- * Detect LV Preload. Used in conjuction with gb_det to dissalow overwriting
+ * Detect LV Preload. Used in conjuction with ab_gb_det to dissalow overwriting
  * the ptrace method
  *
- * @return adb_detection_t (0) if nothing is detected 1 otherwise.
+ * @return ad_detection_t (0) if nothing is detected 1 otherwise.
  *
  */
-uint8_t lv_det();
+uint8_t ab_lvpreld_det();
 
  #endif

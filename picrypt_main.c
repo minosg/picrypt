@@ -23,13 +23,13 @@ int main(int argc, char **argv)
   int16_t pc_hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
- uint8_t pc_brpoint_det_d = (bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
-                             bp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
-                             bp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
-                             bp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
-                             bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
-                             bp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
-                             bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
+ uint8_t pc_brpoint_det_d = (ab_breakp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
+                             ab_breakp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
   if (pc_brpoint_det_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   }
 
   /* Detect gdb debugger and LV_PRELOAD bypass */
-  if (lv_det() || gb_det()) {
+  if (ab_lvpreld_det() || ab_gb_det()) {
     printf("Warning Tampering Detected\n");
     pc_flag_antitamper_d = true;
   }
