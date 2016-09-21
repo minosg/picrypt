@@ -196,7 +196,8 @@ An example of a fully configured header file is included in the projects
 
 Notes:
 
-1. The CPU serial of the target device can be found by issuing /proc/cpuinfo
+1. The CPU serial of the target device can be found by
+issuing ```cat /proc/cpuinfo | grep Serial | awk '{print $3}'```
 2. The software id can be found by issuing ```cat /etc/machine-id```
 3. The sha1 can be found by issuing```sha1sum /etc/fstab```
 4. PI_VER is the version of raspbeery pi, currently only 2 ad 3 are supported.
@@ -216,7 +217,16 @@ Finally compile and install.
 ~~~~~
 Make clean
 Make
-Make install
+sudo Make install
+~~~~~
+
+Assuming authorized_hwd.h has the commented out entry of //#define DEVEL, which
+is the case after a fresh checkout, you can invoke a development build for
+increased verbosity.
+
+~~~~~
+Make clean & Make devel
+gdb ...
 ~~~~~
 
 Feeding the directory to codelock encrypts it.
@@ -225,7 +235,12 @@ Feeding the directory to codelock encrypts it.
 codelock /opt/awesomeproject
 ~~~~~
 
-## Accessing the Hardware Info structure in usr_set_keygen.c
+_Running gdb in arm architecture with libcrypt will crash unless gdb is asked
+to ignore SIGILL: _
+
+ ```handle SIGILL nostop noprint```
+
+## Accessing the Hardware Info structure in ```usr_set_keygen.c```
 
 The code will pass a structure containing all the collected information to
 hash_low and hash_high methods, which need to be implemented by the user.
