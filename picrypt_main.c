@@ -16,42 +16,41 @@
 
 int main(int argc, char **argv)
 {
-  bool permitted = true;
-  bool antitamper = false;
-  hwd_nfo_param_t * hardware_info = hwinfo_init();
-  char hash_key_d[HBUFF_SZ+1];
-  int16_t hash_key_e[HBUFF_SZ];
+  bool pc_flag_permitted_d = true;
+  bool pc_flag_antitamper_d = false;
+  hwd_nfo_param_t * pc_hardware_info_d = hwinfo_init();
+  char pc_hash_key_d[HBUFF_SZ+1];
+  int16_t pc_hash_key_e[HBUFF_SZ];
 
   /* Add breakpoint detection to critical methods */
- uint8_t btd = (bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
-                 bp_det((RAM_ADDR_SZ)&soft_machine_id)+\
-                 bp_det((RAM_ADDR_SZ)&sha1_from_en_buf_to_en_buff)+\
-                 bp_det((RAM_ADDR_SZ)&hash_enc)+\
-                 bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
-                 bp_det((RAM_ADDR_SZ)&encrypt_string)+\
-                 bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
-  if (btd != 0) {
+ uint8_t pc_brpoint_det_d = (bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                             bp_det((RAM_ADDR_SZ)&soft_machine_id)+\
+                             bp_det((RAM_ADDR_SZ)&sha1_from_en_buf_to_en_buff)+\
+                             bp_det((RAM_ADDR_SZ)&hash_enc)+\
+                             bp_det((RAM_ADDR_SZ)&hwinfo_add)+\
+                             bp_det((RAM_ADDR_SZ)&encrypt_string)+\
+                             bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
+  if (pc_brpoint_det_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
     #endif
-    antitamper = true;
+    pc_flag_antitamper_d = true;
     // TODO Make it goto somewhere
   }
 
   /* Detect gdb debugger and LV_PRELOAD bypass */
   if (lv_det() || gb_det()) {
     printf("Warning Tampering Detected\n");
-    antitamper = true;
+    pc_flag_antitamper_d = true;
   }
 
   /* Add the result of anti-tamper detection to the structure */
-  hwinfo_add(hardware_info, HW_ANTITAMPER, (bool *)&antitamper);
-  if (antitamper == true) {
+  hwinfo_add(pc_hardware_info_d, HW_ANTITAMPER, (bool *)&pc_flag_antitamper_d);
+  if (pc_flag_antitamper_d) {
 
-    hwinfo_print(hardware_info);
     /* Call the user method and let him handle with antitamper without
     exposing more parts of the code */
-    hash_enc(hardware_info, hash_key_e, sizeof(hash_key_e));
+    hash_enc(pc_hardware_info_d, pc_hash_key_e, sizeof(pc_hash_key_e));
 
     /* Just in case the user did not exit the program, ensure code execution
     ends here (And give a fake password just in case )*/
@@ -62,49 +61,49 @@ int main(int argc, char **argv)
   #ifdef HWD_ID
   /* Allow the user to override the detected CPU serial */
   #ifndef FAKE_SERIAL
-  uint64_t serial = pi_serial();
+  uint64_t pc_serial_rt_d = pi_serial();
   #else
-  uint64_t serial = (uint64_t)FAKE_SERIAL;
+  uint64_t pc_serial_rt_d = (uint64_t)FAKE_SERIAL;
   #endif
 
   /* Decrypt the Authorized CPU Serial */
-  const int16_t hardware_id_e[] = HWD_ID;
-  char hardware_id_d[CPU_SER_SIZE + 1];
-  _STRHT_DECRPT_(hardware_id_e, hardware_id_d);
-  uint64_t permitted_serial = (uint64_t)strtoull(hardware_id_d, NULL, 16);
+  const int16_t pc_hardware_id_e[] = HWD_ID;
+  char pc_hardware_id_d[CPU_SER_SIZE + 1];
+  _STRHT_DECRPT_(pc_hardware_id_e, pc_hardware_id_d);
+  uint64_t pc_serial_hd_d = (uint64_t)strtoull(pc_hardware_id_d, NULL, 16);
 
   /* Add the data to the hw_info structure */
-  hwinfo_add(hardware_info, HW_SERIAL, &serial);
+  hwinfo_add(pc_hardware_info_d, HW_SERIAL, &pc_serial_rt_d);
 
-  if ((PROTECTION >= SCRIPT_KIDDY) && (permitted_serial != serial)) {
+  if ((PROTECTION >= SCRIPT_KIDDY) && (pc_serial_hd_d != pc_serial_rt_d)) {
     #ifdef DEVEL
     printf("Serial Miss-Match!! \n");
     #endif
-    permitted = false;
+    pc_flag_permitted_d = false;
   }
   #endif
   #ifdef MACHINE_ID
   /* Allocate buffers */
-  int16_t machine_id_hd_e[] = MACHINE_ID;
-  int16_t machine_id_rt_e[MACHINE_ID_SIZE];
+  int16_t pc_machine_id_hd_e[] = MACHINE_ID;
+  int16_t pc_machine_id_rt_e[MACHINE_ID_SIZE];
 
   /* Decryption Buffer */
   // char machine_id_hd_d[MACHINE_ID_SIZE + 1]; /* Placeholder */
 
   /* Exctact Current Machine ID (not sensitive) */
-  char machine_id_rt_d[MACHINE_ID_SIZE + 1];
-  soft_machine_id(machine_id_rt_d);
+  char pc_machine_id_rt_d[MACHINE_ID_SIZE + 1];
+  soft_machine_id(pc_machine_id_rt_d);
 
   /* Add the machine-id to the hw_info structure */
-  hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_rt_d);
-  _STRHT_ENCRPT_(machine_id_rt_d, machine_id_rt_e);
+  hwinfo_add(pc_hardware_info_d, HW_MACHINE_ID, pc_machine_id_rt_d);
+  _STRHT_ENCRPT_(pc_machine_id_rt_d, pc_machine_id_rt_e);
 
   if (PROTECTION >= ARCH_USER) {
-    if (!_STRHT_CMP_(machine_id_rt_e, machine_id_hd_e)) {
+    if (!_STRHT_CMP_(pc_machine_id_rt_e, pc_machine_id_hd_e)) {
       #ifdef DEVEL
       printf("Machine ID Miss Match!! \n");
       #endif
-      permitted = false;
+      pc_flag_permitted_d = false;
     }
   }
   #endif
@@ -115,38 +114,38 @@ int main(int argc, char **argv)
    variable_hd/rt_e -> variable name,
                        hash_defined/runtime
                        encrypted/decrypted*/
-  int16_t file_seed_hd_e[] = FILE_SEED;
-  int16_t file_sha_hd_e[] = FILE_SHA1;
-  int16_t file_sha_rt_e[SHA_DIGEST_LENGTH * 2];
+  int16_t pc_file_seed_hd_e[] = FILE_SEED;
+  int16_t pc_file_sha_hd_e[] = FILE_SHA1;
+  int16_t pc_file_sha_rt_e[SHA_DIGEST_LENGTH * 2];
 
   /* Allocate the memory for the decryption buffers */
   // char file_sha_rt_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
-  char sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
+  char pc_sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
 
   /* Decryption Buffers */
-  char file_seed_hd_d[(sizeof(file_seed_hd_e)/sizeof(int16_t)) +1];
+  char file_seed_hd_d[(sizeof(pc_file_seed_hd_e)/sizeof(int16_t)) +1];
   // char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
 
 
   /* Store the sensitive information */
-  if (sha1_from_en_buf_to_en_buff(file_seed_hd_e,
-                                  sizeof(file_seed_hd_e),
-                                  file_sha_rt_e) == NULL) {
-      permitted = false;
-      hwinfo_add(hardware_info, HW_SHA1, (char *)"Key-File is Missing");
+  if (sha1_from_en_buf_to_en_buff(pc_file_seed_hd_e,
+                                  sizeof(pc_file_seed_hd_e),
+                                  pc_file_sha_rt_e) == NULL) {
+      pc_flag_permitted_d = false;
+      hwinfo_add(pc_hardware_info_d, HW_SHA1, (char *)"Key-File is Missing");
   } else {
 
   /* Add the sha1 to the hw_info structure */
-  _STRHT_DECRPT_(file_sha_rt_e, sha_hash_rt_d);
-  hwinfo_add(hardware_info, HW_SHA1, sha_hash_rt_d);
+  _STRHT_DECRPT_(pc_file_sha_rt_e, pc_sha_hash_rt_d);
+  hwinfo_add(pc_hardware_info_d, HW_SHA1, pc_sha_hash_rt_d);
   }
 
   if (PROTECTION >= PEN_TESTER) {
-    if (!_STRHT_CMP_(file_sha_rt_e,file_sha_hd_e)) {
+    if (!_STRHT_CMP_(pc_file_sha_rt_e,pc_file_sha_hd_e)) {
       #ifdef DEVEL
       printf("SHA1 Miss-Match!! \n");
       #endif
-      permitted = false;
+      pc_flag_permitted_d = false;
     }
   }
   #endif
@@ -154,7 +153,7 @@ int main(int argc, char **argv)
   /* Program will NOT break execution when a wrong password
   is inserted by default. Developper mode enables this behavior */
   #ifdef DEVEL
-  if (!permitted) {
+  if (!pc_flag_permitted_d) {
     printf("This is the password you are looking for...\n"
            "( You pirate !!! )\n");
     exit(1);
@@ -162,19 +161,19 @@ int main(int argc, char **argv)
   #endif
 
   /* Add the permitted variable to the data structure */
-  hwinfo_add(hardware_info, HW_AUTHORIZED,  (bool *)&permitted);
+  hwinfo_add(pc_hardware_info_d, HW_AUTHORIZED,  (bool *)&pc_flag_permitted_d);
 
   /* Calculate the password hash */
-  hash_enc(hardware_info, hash_key_e, sizeof(hash_key_e));
+  hash_enc(pc_hardware_info_d, pc_hash_key_e, sizeof(pc_hash_key_e));
 
   if (argc == 1) {
     help(argv[0]);
   #ifdef HWD_ID
   } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    ram_key(_STRHT_DECRPT_(hash_key_e, hash_key_d));
-    printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
+    ram_key(_STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
+    printf("%s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
-    printf("%s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
+    printf("%s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
   #ifdef DEVEL
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
     if (validate_key(argv[2])) {
@@ -190,20 +189,21 @@ int main(int argc, char **argv)
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
 
-    ram_key(_STRHT_DECRPT_(hash_key_e, hash_key_d));
+    ram_key(_STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
     printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
-           serial,
-           serial);
-    printf("Hash Key:     %s\n", _STRHT_DECRPT_(hash_key_e, hash_key_d));
+           pc_serial_rt_d,
+           pc_serial_rt_d);
+    printf("Hash Key:     %s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
     #endif
     #ifdef MACHINE_ID
-    printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(hardware_info,
+    printf("Machine-id:   %s\n",(char *)hwinfo_get_pl(pc_hardware_info_d,
                                                       HW_MACHINE_ID));
     #endif
     #if defined(FILE_SEED) && defined(FILE_SHA1)
-    printf("KeyFile:      %s\n", _STRHT_DECRPT_(file_seed_hd_e,
+    printf("KeyFile:      %s\n", _STRHT_DECRPT_(pc_file_seed_hd_e,
                                                 file_seed_hd_d));
-    printf("SHA1 Key:     %s\n", (char *)hwinfo_get_pl(hardware_info,HW_SHA1));
+    printf("SHA1 Key:     %s\n", (char *)hwinfo_get_pl(pc_hardware_info_d,
+                                                       HW_SHA1));
 
     #endif
   } else {
