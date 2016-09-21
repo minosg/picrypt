@@ -109,12 +109,17 @@ void hwinfo_print(hwd_nfo_param_t * hw_info_struct)
       case 5:
         str_type = "Authorized";
         break;
+
+      case 6:
+        str_type = "Anti-Tamper";
+        break;
     }
 
     printf("Type Number: %d\n",current->hw_type);
     if (current->hw_type == HW_SERIAL) {
       printf("%s: %" PRIx64 "\n", str_type, *(uint64_t*)current->hw_payload);
-    } else if (current->hw_type == HW_AUTHORIZED) {
+    /* After index 5 the structure stores boolean flags */
+    } else if (current->hw_type >= HW_AUTHORIZED) {
       printf("%s: %s\n", str_type, *(bool *)current->hw_payload ? "true" : "false");
     } else {
       printf("%s: %s\n",str_type, (char *)current->hw_payload);

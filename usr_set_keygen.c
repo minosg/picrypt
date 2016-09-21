@@ -23,20 +23,27 @@ uint64_t hash_low(hwd_nfo_param_t * hwinfo)
 {
   /* Uncomment any of the fields that you need to calcuate the hash key
   const bool *authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
+  const bool anti-tamper = *(bool *)hwinfo_get_pl(hwinfo, HW_ANTITAMPER);
   const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
   const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
   const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
   */
 
+  const bool antitamper = *(bool *)hwinfo_get_pl(hwinfo, HW_ANTITAMPER);
+  if (antitamper == true) {
+    printf("Anti-Tamper Warning, there is your fake-serial: \n");
+    return (uint64_t)(123);
+  }
+
   uint8_t ret = 1;
-  bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
+  const bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
 
   /* Program will NOT break execution when it runs on Unauthorized hardware.
   It is REQUIRED for the user to catch the authorized and mess with the
   algorythm producing the key. Having no feedback on weather a key is valid or
   not makes it harder for bruteforce attack to work*/
 
-  if (authorized != true){
+  if (authorized != true) {
     printf("Not Authorized\n");
     ret = ret << 3;
   }

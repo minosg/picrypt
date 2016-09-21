@@ -56,6 +56,7 @@ variables = ["btd",
              "file_sha_rt_e",
              "sha_hash_rt_d",
              "permitted",
+             "anti-tamper",
              "hardware_info",
              "hash_key_e",
              "hash_key_d"]

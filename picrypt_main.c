@@ -17,6 +17,7 @@
 int main(int argc, char **argv)
 {
   bool permitted = true;
+  bool antitamper = false;
   hwd_nfo_param_t * hardware_info = hwinfo_init();
   char hash_key_d[HBUFF_SZ+1];
   int16_t hash_key_e[HBUFF_SZ];
@@ -33,8 +34,29 @@ int main(int argc, char **argv)
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
     #endif
-    permitted = false;
+    antitamper = true;
     // TODO Make it goto somewhere
+  }
+
+  /* Detect gdb debugger and LV_PRELOAD bypass */
+  if (lv_det() || gb_det()) {
+    printf("Warning Tampering Detected\n");
+    antitamper = true;
+  }
+
+  /* Add the result of anti-tamper detection to the structure */
+  hwinfo_add(hardware_info, HW_ANTITAMPER, (bool *)&antitamper);
+  if (antitamper == true) {
+
+    hwinfo_print(hardware_info);
+    /* Call the user method and let him handle with antitamper without
+    exposing more parts of the code */
+    hash_enc(hardware_info, hash_key_e, sizeof(hash_key_e));
+
+    /* Just in case the user did not exit the program, ensure code execution
+    ends here (And give a fake password just in case )*/
+    printf("Password: %u\n", PI_DIGITS);
+    exit(0);
   }
 
   #ifdef HWD_ID
@@ -75,7 +97,6 @@ int main(int argc, char **argv)
 
   /* Add the machine-id to the hw_info structure */
   hwinfo_add(hardware_info, HW_MACHINE_ID, machine_id_rt_d);
-
   _STRHT_ENCRPT_(machine_id_rt_d, machine_id_rt_e);
 
   if (PROTECTION >= ARCH_USER) {
@@ -129,12 +150,6 @@ int main(int argc, char **argv)
     }
   }
   #endif
-
-  if (lv_det() || gb_det()) {
-    printf("Warning Tampering Detected\n");
-    permitted = false;
-  }
-
 
   /* Program will NOT break execution when a wrong password
   is inserted by default. Developper mode enables this behavior */
