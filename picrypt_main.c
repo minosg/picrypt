@@ -30,7 +30,9 @@ int main(int argc, char **argv)
                  bp_det((RAM_ADDR_SZ)&encrypt_string)+\
                  bp_det((RAM_ADDR_SZ)&hwinfo_get_pl));
   if (btd != 0) {
+    #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
+    #endif
     permitted = false;
     // TODO Make it goto somewhere
   }
