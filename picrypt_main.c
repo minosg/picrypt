@@ -172,12 +172,10 @@ int main(int argc, char **argv)
   if (argc == 1) {
     pc_help(argv[0]);
   #ifdef HWD_ID
-  } else if (argc == 2 && !strcmp(argv[1],"--ramkey")) {
-    pc_ram_key(_STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
-    printf("%s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
+  #ifdef DEVEL
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
     printf("%s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
-  #ifdef DEVEL
+
   } else if (argc == 3 && !strcmp(argv[1],"--check")) {
     if (pc_validate_key(argv[2])) {
       printf("Key %s is Valid\n", argv[2]);
@@ -192,7 +190,6 @@ int main(int argc, char **argv)
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
 
-    pc_ram_key(_STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
     printf("Serial (int): %" PRIu64 "\nSerial (hex): %" PRIx64 " \n",
            pc_serial_rt_d,
            pc_serial_rt_d);

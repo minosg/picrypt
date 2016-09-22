@@ -156,25 +156,6 @@ int16_t * pc_hash_enc(hw_msg_page_t * hwinfo,
   return hash_buffer_e;
 }
 
-void pc_ram_key(const char * hash_key)
-{
-  FILE *fptr;
-  fptr=fopen(RAM_FILE,"w");
-  if(fptr==NULL) {
-    printf("Error Opening File!");
-    exit(1);
-  }
-
-  char key_text[36];
-  sprintf(key_text, "passphrase_passwd=%s", hash_key);
-  fprintf(fptr,"%s\n",key_text);
-  fclose(fptr);
-  /* Change permissions to read only for owner only (root) */
-  /* TODO in production make the file read only
-  chmod(RAM_FILE, S_IRUSR); */
-  chmod(RAM_FILE, S_IWUSR | S_IRUSR);
-}
-
 /* verify that a key is valid for this hardware */
 bool pc_validate_key(char const *key)
 {
@@ -206,12 +187,9 @@ bool pc_validate_key(char const *key)
 void pc_help(const char* prgm)
 {
   printf("<---------------------- Options -------------------------------->\n");
-  #ifdef HWD_ID
-  printf("%s --hash          : Generate Unique Machine Hash\n", prgm);
-  printf("%s --ramkey        : Create an encryptfs unlock key to RAM \n", prgm);
   #ifdef DEVEL
+  printf("%s --hash          : Generate Unique Machine Hash\n", prgm);
   printf("%s --check xxxxxx  : Check if a key is valid or not \n", prgm);
-  #endif
-  #endif
   printf("%s --vhash         : Print Verbose Unique Machine Hash\n", prgm);
+  #endif
 }

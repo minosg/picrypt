@@ -164,15 +164,6 @@ int16_t * pc_hash_enc(hw_msg_page_t * hwinfo,
                    const uint16_t byte_size);
 
 /**
- * Crate a RAM_FILE containing the hash key
- *
- * @param hash_key Integer representation of the calculated haskhed password.
- *
- */
-
-void pc_ram_key(const char * hash_key);
-
-/**
  * Check a hash againist the calcuated hardware hash
  *
  * @param key String hexadecimal represenation of the key to test.
