@@ -192,4 +192,6 @@ void pc_help(const char* prgm)
   printf("%s --check xxxxxx  : Check if a key is valid or not \n", prgm);
   printf("%s --vhash         : Print Verbose Unique Machine Hash\n", prgm);
   #endif
+  printf("%s --mount /absolute_path  : Mount an encrypted path \n", prgm);
+  printf("%s --encrypt /absolute_path : Encrypt a path using hwd keys\n", prgm);
 }

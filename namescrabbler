@@ -42,7 +42,12 @@ methods = ["sh_array_to_header",
            "sh_print_array",
            "hw_cat",
            "sh_parse_header",
-           "hw_delete"]
+           "hw_delete"
+           "lk_mount",
+           "lk_encrypt",
+           "lk_add_keyhcain",
+           "lk_check_root",
+           "lk_sanitize_input"]
 
 variables = ["pc_brpoint_det_d",
              "pc_serial_rt_d",
@@ -74,6 +79,8 @@ files = ["adb.h",
          "picrypt.c",
          "picrypt.h",
          "picrypt_main.c",
+         "lock.h",
+         "lock.c",
          "strhide.c",
          "usr_set_keygen.c",
          "ppprocessor.c"]

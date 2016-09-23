@@ -14,6 +14,7 @@
 #include "adb.h"
 
  /* Detect GDB presence */
+ /* TODO make it work without breaking system calls*/
  uint8_t ab_gb_det()
  {
    if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0) {

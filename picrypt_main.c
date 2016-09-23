@@ -46,7 +46,7 @@ int main(int argc, char **argv)
   }
 
   /* Detect gdb debugger and LV_PRELOAD bypass */
-  if (ab_lvpreld_det() || ab_gb_det()) {
+  if (ab_lvpreld_det()) {
     printf("Warning Tampering Detected\n");
     pc_flag_antitamper_d = true;
   }
@@ -185,6 +185,24 @@ int main(int argc, char **argv)
       return 1;
     }
   #endif
+  } else if (argc == 3 && !strcmp(argv[1],"--encrypt")) {
+    const char *path = argv[2];
+    if (lk_sanitize_input((char *)path)) {
+      _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d);
+      lk_encrypt(pc_hash_key_d, path);
+    } else {
+      printf("Path %s is not of acceptedable format\n", path);
+      exit(1);
+    }
+  } else if (argc == 3 && !strcmp(argv[1],"--mount")) {
+    const char *path = argv[2];
+    _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d);
+    if (lk_sanitize_input((char *)path)) {
+      lk_mount(pc_hash_key_d, path);
+    } else {
+      printf("Path %s is not of acceptedable format\n", path);
+      exit(1);
+    }
   #endif
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");

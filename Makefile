@@ -19,14 +19,14 @@ SSLFLAGS= -lssl -lcrypto
 all: picrypt
 
 picrypt :namescrabbler_done ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
-adb.o picrypt_main.o picrypt.o
+adb.o lock.o picrypt_main.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o adb.o \
-		-o picrypt $(SSLFLAGS)
+		lock.o -o picrypt $(SSLFLAGS)
 
 devel: ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
-adb.o picrypt_main_devel.o picrypt.o
+adb.o lock.o picrypt_main_devel.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main_devel.o picrypt.o \
-	adb.o -o picrypt $(SSLFLAGS)
+	adb.o lock.o -o picrypt $(SSLFLAGS)
 
 ppprocessor : 	ppprocessor.o strhide.o
 			$(CC) ppprocessor.o strhide.o -o ppprocessor
@@ -57,6 +57,9 @@ usr_set_keygen.o :usr_set_keygen.c picrypt.h authorized_hwd.h
 adb.o: adb.c adb.h
 	$(CC) $(CFLAGS) adb.c
 
+lock.o: lock.h lock.h
+	$(CC) $(CFLAGS) lock.c
+
 namescrabbler_done: namescrabbler
 	./namescrabbler
 
@@ -65,6 +68,29 @@ install: picrypt
 
 uninstall:
 	rm -f /usr/bin/picrypt
+
+automount_enable:
+	@echo -e "[Unit]" >> /lib/systemd/system/picrypt.service
+	@echo -e "Description=PiCrypt Key Creator" >> /lib/systemd/system/picrypt.service
+	@echo -e "DefaultDependencies=no" >> /lib/systemd/system/picrypt.service
+	@echo -e "After=sysinit.target\n" >> /lib/systemd/system/picrypt.service
+	@echo -e "[Install]" >> /lib/systemd/system/picrypt.service
+	@echo -e "WantedBy=multi-user.target\n" >> /lib/systemd/system/picrypt.service
+	@echo -e "[Service]" >> /lib/systemd/system/picrypt.service
+	@echo -e "TimeoutStartSec=0" >> /lib/systemd/system/picrypt.service
+	@echo -e "Type=oneshot" >> /lib/systemd/system/picrypt.service
+	@echo -e "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
+	systemctl daemon-reload
+	systemctl enable picrypt
+
+automount_disable:
+	@systemctl disable picrypt
+	@rm -rf /lib/systemd/system/picrypt.service
+	@systemctl daemon-reload
+
+automount_add:
+	@echo -e "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
+	@systemctl daemon-reload
 
 clean :
 	rm -f *.o
