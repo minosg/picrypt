@@ -70,16 +70,16 @@ uninstall:
 	rm -f /usr/bin/picrypt
 
 automount_enable:
-	@echo -e "[Unit]" >> /lib/systemd/system/picrypt.service
-	@echo -e "Description=PiCrypt Key Creator" >> /lib/systemd/system/picrypt.service
-	@echo -e "DefaultDependencies=no" >> /lib/systemd/system/picrypt.service
-	@echo -e "After=sysinit.target\n" >> /lib/systemd/system/picrypt.service
-	@echo -e "[Install]" >> /lib/systemd/system/picrypt.service
-	@echo -e "WantedBy=multi-user.target\n" >> /lib/systemd/system/picrypt.service
-	@echo -e "[Service]" >> /lib/systemd/system/picrypt.service
-	@echo -e "TimeoutStartSec=0" >> /lib/systemd/system/picrypt.service
-	@echo -e "Type=oneshot" >> /lib/systemd/system/picrypt.service
-	@echo -e "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
+	@echo "[Unit]" >> /lib/systemd/system/picrypt.service
+	@echo "Description=PiCrypt Key Creator" >> /lib/systemd/system/picrypt.service
+	@echo "DefaultDependencies=no" >> /lib/systemd/system/picrypt.service
+	@echo "After=sysinit.target\n" >> /lib/systemd/system/picrypt.service
+	@echo "[Install]" >> /lib/systemd/system/picrypt.service
+	@echo "WantedBy=multi-user.target\n" >> /lib/systemd/system/picrypt.service
+	@echo "[Service]" >> /lib/systemd/system/picrypt.service
+	@echo "TimeoutStartSec=0" >> /lib/systemd/system/picrypt.service
+	@echo "Type=oneshot" >> /lib/systemd/system/picrypt.service
+	@echo "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
 	systemctl daemon-reload
 	systemctl enable picrypt
 
@@ -89,7 +89,7 @@ automount_disable:
 	@systemctl daemon-reload
 
 automount_add:
-	@echo -e "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
+	@echo "ExecStart=/bin/sh -c '/usr/bin/picrypt --mount $(target)'" >> /lib/systemd/system/picrypt.service
 	@systemctl daemon-reload
 
 clean :
