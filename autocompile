@@ -278,7 +278,7 @@ if __name__ == "__main__":
                         None,
                         None)]
         elif usr_args.protection == "CARE_BEAR":
-            serials = [(get_revision(), get_serial(), None, None)]
+            serials = [(get_revision(), None, None, None)]
         else:
             print("Not supported protection level: %s" % usr_args.protection)
             sys.exit(1)
