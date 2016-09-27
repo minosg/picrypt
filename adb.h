@@ -17,8 +17,12 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <stdint.h>
+ #include <unistd.h>
  #include <inttypes.h>
  #include <sys/ptrace.h>
+ #include <sys/types.h>
+ #include <sys/wait.h>
+ #include <sys/prctl.h>
 
  #if __x86_64__
  #define RAM_ADDR_SZ uint64_t
@@ -38,6 +42,14 @@
   *
   */
 uint8_t ab_gb_det();
+
+/**
+ * Detect debuggers running ptrace without breaking execve commands
+ *
+ * @return ad_detection_t (0) if nothing is detected 1 otherwise.
+ *
+ */
+uint8_t  ab_gb_det_2();
 
 /**
  * Detect breakpoint in fucntion

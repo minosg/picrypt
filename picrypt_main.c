@@ -46,8 +46,10 @@ int main(int argc, char **argv)
   }
 
   /* Detect gdb debugger and LV_PRELOAD bypass */
-  if (ab_lvpreld_det()) {
+  if (ab_lvpreld_det() || ab_gb_det_2()) {
+    #ifdef DEVEL
     printf("Warning Tampering Detected\n");
+    #endif
     pc_flag_antitamper_d = true;
   }
 
