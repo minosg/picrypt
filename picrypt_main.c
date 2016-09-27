@@ -31,12 +31,16 @@ int main(int argc, char **argv)
   /* Add breakpoint detection to critical methods */
  uint8_t pc_bpoint_dt_d;
  pc_bpoint_dt_d = (ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
-                   ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id)+\
-                   ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff)+\
                    ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
-                   ab_breakp_det((RAM_ADDR_SZ)&hw_msg_add)+\
                    ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
                    ab_breakp_det((RAM_ADDR_SZ)&hw_get));
+                   
+  #ifdef MACHINE_ID
+  pc_bpoint_dt_d += ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id);
+  #endif /* MACHINE_ID */
+  #if defined(FILE_SEED) && defined(FILE_SHA1)
+  pc_bpoint_dt_d += ab_breakp_det((RAM_ADDR_SZ)&pc_sha1_from_en_buf_to_en_buff);
+   #endif /* FILE_SEED || FILE_SHA1 */
   if (pc_bpoint_dt_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
@@ -175,7 +179,6 @@ int main(int argc, char **argv)
 
   if (argc == 1) {
     pc_help(argv[0]);
-  #ifdef HWD_ID
   #ifdef DEVEL
   } else if (argc == 2 && !strcmp(argv[1],"--hash")) {
     printf("%s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
@@ -207,7 +210,6 @@ int main(int argc, char **argv)
       printf("Path %s is not of acceptedable format\n", path);
       exit(1);
     }
-  #endif /* HWD_ID */
   #ifdef DEVEL
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");
