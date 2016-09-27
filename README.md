@@ -67,7 +67,7 @@ the code.
 
 -Define guard serve two purposes. First the code does not break if you modify
 or ommit parameters, and most importantly because it modifies the codespace,
-it would be hard to produce a patcher that would work on every device using
+it would be harder to produce a patcher that would work on every device using
 this software.
 
 * Why the added complexity with the user salt?
@@ -92,6 +92,22 @@ be bothered. Misplacing an SD card with your personal project protected by the
 tool will most likely get it formatted and used to store  kitty pictures from
 the internet. Just try not to loose it at an infosec convention...
 
+* How can I protect my sensitive variable names?
+
+ - If you do wish to use intuitive names in your method implementation, you can
+  set them to be randomly named by adding them to the namescrabbler list. Do not
+  use that for common words that are contained in other variables i.e DO NOT
+  scamble a variable named re. This trick only works if the variables are UNIQUE
+  since it is calling sed to do insline replacement.
+
+* Do I really need to write code to handle anti-tamper and authorized flags?.
+
+  - Depends. Mostly on how secure would you like your code to be. Not checking
+  the protection flags, will enable anyone to step through your hash calculation
+  routine and reverse engineer the logic. Make a fake logic and user a Finite
+  state machine logic to separate actual code to fake code. Do not forget to add
+  sensitive variables and functions to namescrabbler.
+
 * Why open source it if your logic can be used to attack it?
 
   -Because sharing is fun, and more minds are better than one.
@@ -102,6 +118,8 @@ the internet. Just try not to loose it at an infosec convention...
 
 ## Dependancies
 
+The following packages are required to build and run on Raspbian/Debian variant:
+
 ~~~~~
 build-essentail
 libssl-dev
@@ -111,13 +129,13 @@ ecryptfs-utils
 ## Installation
 
 
-Checkout the code
+Checkout the code:
 
 ~~~~~
 git clone && cd picrypt
 ~~~~~
 
-Implement your own password generation logic.
+Implement your own password generation logic:
 
 ~~~~~ f
 nano/vim/atom usr_set_keygen.c
@@ -126,7 +144,7 @@ nano/vim/atom usr_set_keygen.c
 _The hash_high is only required if LONG_HASH is used_
 
 If running on the target device autocompile will autofill the information for
-the requested protecction level
+the requested protecction level:
 
 ~~~~~
 ./autocompile -c
@@ -148,7 +166,7 @@ There are 5 protection levels 4 of which are currently implemented.
 4. PEN_TESTER:    Check CPU Serial, Software ID and a user's defined file's SHA1
 5. TIN_FOIL_HAT:  (Not implemented) Gets an extra key from a hardware dongle
 
-Protection is implemented as a non teerminating flag, that will be asserted if
+Protection is implemented as a non terminating flag, that will be asserted if
 a single test defined by the protection level fails. It is up to the user's
 discretion on what to do with it. I would highly recommend to NOT terminate the
 program or print an error message, just modify the result to make brute force
@@ -229,11 +247,45 @@ Make clean & Make devel
 gdb ...
 ~~~~~
 
-Feeding the directory to codelock encrypts it.
+In order to encrypt one or more directories use the similarly named directive
 
 ~~~~~
-codelock /opt/awesomeproject
+sudo picrypt --encrypt /opt/your_awesome_code
+sudo picrypt --encrypt /opt/code_you_are_ashamed_of
 ~~~~~
+
+In order to mount a previously encrypted directory use the mount directive
+
+~~~~~~
+sudo picrypt --mount /opt/your_awesome_code
+sudo picrypt --mount /opt/code_you_are_ashamed_of
+~~~~~~
+
+** Both encrypt and mount directives assume that the caller has su priviledges,
+that he provided an absolute path, and that ecryptfs-utils is installed onto
+the system **
+
+Makefile can create systemd hooks that will automount encrypted directories
+The first call will create the unit file for the directory specified as target:
+
+~~~~~~
+sudo make automount_enable target=/opt/your_awesome_code
+
+~~~~~~
+
+Additional directories can be added using the add directive:
+
+~~~~~~
+sudo make automount_add target=/opt/code_you_are_ashamed_of
+...
+~~~~~~
+
+Automount can be disabled by calling automount_disable:
+
+~~~~~~
+sudo make automount_disable
+~~~~~~
+
 
 _Running gdb in arm architecture with libcrypt will crash unless gdb is asked
 to ignore SIGILL: _
