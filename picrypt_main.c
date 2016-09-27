@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   if (pc_bpoint_dt_d != 0) {
     #ifdef DEVEL
     printf("Warning Tampering Detected (bp)\n");
-    #endif
+    #endif /* DEVEL */
     pc_flag_antitamper_d = true;
     // TODO Make it goto somewhere
   }
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   if (ab_lvpreld_det() || ab_gb_det_2()) {
     #ifdef DEVEL
     printf("Warning Tampering Detected\n");
-    #endif
+    #endif /* DEVEL */
     pc_flag_antitamper_d = true;
   }
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   uint64_t pc_serial_rt_d = pc_pi_serial();
   #else
   uint64_t pc_serial_rt_d = (uint64_t)FAKE_SERIAL;
-  #endif
+  #endif /* FAKE_SERIAL */
 
   /* Decrypt the Authorized CPU Serial */
   const int16_t pc_hardware_id_e[] = HWD_ID;
@@ -87,10 +87,10 @@ int main(int argc, char **argv)
   if ((PROTECTION >= SCRIPT_KIDDY) && (pc_serial_hd_d != pc_serial_rt_d)) {
     #ifdef DEVEL
     printf("Serial Miss-Match!! \n");
-    #endif
+    #endif /* DEVEL */
     pc_flag_permitted_d = false;
   }
-  #endif
+  #endif /* HWD_ID */
   #ifdef MACHINE_ID
   /* Allocate buffers */
   int16_t pc_machine_id_hd_e[] = MACHINE_ID;
@@ -111,11 +111,11 @@ int main(int argc, char **argv)
     if (!_STRHT_CMP_(pc_machine_id_rt_e, pc_machine_id_hd_e)) {
       #ifdef DEVEL
       printf("Machine ID Miss Match!! \n");
-      #endif
+      #endif /* DEVEL */
       pc_flag_permitted_d = false;
     }
   }
-  #endif
+  #endif /* MACHINE_ID */
 
   #if defined(FILE_SEED) && defined(FILE_SHA1)
   /* Allocate the buffers that will hide the filename and seed */
@@ -128,7 +128,9 @@ int main(int argc, char **argv)
   char pc_sha_hash_rt_d[(SHA_DIGEST_LENGTH * 2) + 1];
 
   /* Decryption Buffers */
+  #ifdef DEVEL
   char file_seed_hd_d[(sizeof(pc_file_seed_hd_e) / sizeof(int16_t)) + 1];
+  #endif /* DEVEL */
   // char sha_hash_hd_d[(SHA_DIGEST_LENGTH * 2) + 1]; /* Placeholder */
 
 
@@ -149,11 +151,11 @@ int main(int argc, char **argv)
     if (!_STRHT_CMP_(pc_file_sha_rt_e,pc_file_sha_hd_e)) {
       #ifdef DEVEL
       printf("SHA1 Miss-Match!! \n");
-      #endif
+      #endif /* DEVEL */
       pc_flag_permitted_d = false;
     }
   }
-  #endif
+  #endif  /* FILE SEED || FILE_SHA1 */
 
   /* Program will NOT break execution when a wrong password
   is inserted by default. Developper mode enables this behavior */
@@ -163,7 +165,7 @@ int main(int argc, char **argv)
            "( You pirate !!! )\n");
     exit(1);
   }
-  #endif
+  #endif /* DEVEL */
 
   /* Add the permitted variable to the data structure */
   hw_msg_add(pc_hardware_info_d, HW_AUTHORIZED,  (bool *)&pc_flag_permitted_d);
@@ -186,7 +188,7 @@ int main(int argc, char **argv)
       printf("Key %s is Invalid\n", argv[2]);
       return 1;
     }
-  #endif
+  #endif /* DEVEL */
   } else if (argc == 3 && !strcmp(argv[1],"--encrypt")) {
     const char *path = argv[2];
     if (lk_sanitize_input((char *)path)) {
@@ -205,7 +207,8 @@ int main(int argc, char **argv)
       printf("Path %s is not of acceptedable format\n", path);
       exit(1);
     }
-  #endif
+  #endif /* HWD_ID */
+  #ifdef DEVEL
   } else if (argc == 2 && !strcmp(argv[1],"--vhash")) {
     printf("\n[ Runtime Hardware Keys ] \n");
     #ifdef HWD_ID
@@ -214,18 +217,18 @@ int main(int argc, char **argv)
            pc_serial_rt_d,
            pc_serial_rt_d);
     printf("Hash Key:     %s\n", _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
-    #endif
+    #endif /* HWD_ID */
     #ifdef MACHINE_ID
     printf("Machine-id:   %s\n",(char *)hw_get(pc_hardware_info_d,
                                                       HW_MACHINE_ID));
-    #endif
+    #endif /* MACHINE_ID */
     #if defined(FILE_SEED) && defined(FILE_SHA1)
     printf("KeyFile:      %s\n", _STRHT_DECRPT_(pc_file_seed_hd_e,
                                                 file_seed_hd_d));
     printf("SHA1 Key:     %s\n", (char *)hw_get(pc_hardware_info_d,
                                                        HW_SHA1));
-
-    #endif
+    #endif /* FILE SEED || FILE_SHA1 */
+  #endif /* DEVEL */
   } else {
     pc_help(argv[0]);
   }
