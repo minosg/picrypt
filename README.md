@@ -3,7 +3,7 @@ A relatively simple and easy to use tool that enables code protection
 on Raspbery Pi related projects.
 
 The main idea behind the project was conceived when I had to carry a couple of
-raspberry pi sd cards, that contained important code, and I was worried about
+raspberry pi SD cards, that contained important code, and I was worried about
 loosing them.I needed a tool that would integrate seamlesly with the OS,
 encrypt the code and automatically unlock it on boot-up. In addition it would
 be it good to be able to protect the code from being run by not authorized
@@ -24,28 +24,28 @@ from an external machine.
 by moving it to a different OS, out of your controll.
 * User defined salt and password generation routines, allowing finer controll
 of the password generation logic.
-* Binary is stripped from objectrs and contains no strings that can be used as
+* Binary is stripped from objects and contains no strings that can be used as
 attack vectors.
 * Provides Several layers of extra protection if required, using sofware id's
 and sha1 of keyfiles.
-* Contains basic anti debugging techinques that do NOT break the flow but
+* Contains basic anti-debugging techinques that do NOT break the flow but
 allert the user logic.
-* The nature of the action when tamper detection triggers or when run on not
-authorized hardware is left upon user's controll.
 * Easy to configure and use.
-* Contains a autocompile script that will detect the required hardware and
+* Contains a auto-compile script that will detect the required hardware and
 software parameters and build it.
 * Using hash defines to modify code space based on parameters.
 * Code is pre-processed before compillation to remove and hide sensitive
 information.
-* Can produce 8 and 16 Byte unlock codes.
+* Can produce 8 and 16 bytes unlock codes.
+* Supports encryption of multiple directories using the same key.
+* Systemd suport, directories can be automatically unlocked on start-up.
 
 ## Planned Featrues
 
 * Harware Dongle Key.
 * Optional Password generation using the full ASCII charset.
-* Automate the proccess of protecting multiple directories.
-* Implement a systemd friendly unlock approach.
+* ~~Automate the proccess of protecting multiple directories.~~
+* ~~Implement a systemd friendly unlock approach.~~
 
 ## Disclaimer
 
@@ -60,19 +60,21 @@ projects.
 
 * Why do you use some many defines?
 
--Because it allows versatility and fine tuning without having to modify
+ - Because it allows versatility and fine tuning without having to modify
 the code.
+
 
 * My eyes hurt from those ifndef. Would it be better not to include them?
 
--Define guard serve two purposes. First the code does not break if you modify
+ - Define guard serve two purposes. First the code does not break if you modify
 or ommit parameters, and most importantly because it modifies the codespace,
 it would be harder to produce a patcher that would work on every device using
 this software.
 
+
 * Why the added complexity with the user salt?
 
--Better explained by example. Imagine a simple mapping algorythm that maps a
+ - Better to explained by example. Imagine a simple mapping algorythm that maps a
 letter to its next ASCII char. /etc/fstab would convert to 0fud0gtubc.
 Knowing that / is repeated and always the root, finding the logic is as simple
 as using a hex editior, find the printable chars, locating the repeating char
@@ -81,16 +83,18 @@ as using a hex editior, find the printable chars, locating the repeating char
 same for each user, (ifdefs) and the repeated char can be unique for every
 user, it makes this attack more time consuming.
 
+
 * If it can be cracked why bother?
 
--Everything can be cracked, especially a system containing the lock and the
-key under the same unprotected space. There is a reason Raspbery Pi's are not
-used in production projects. Unless there is a contained read proteted flash
-memory it is impossible to hide something on an SD card. That being said, if
-the effort of cracking something is greater than the payout, attackers will not
-be bothered. Misplacing an SD card with your personal project protected by the
-tool will most likely get it formatted and used to store  kitty pictures from
-the internet. Just try not to loose it at an infosec convention...
+ - Everything can be cracked, especially a system containing the lock and the
+  key under the same unprotected space. There is a reason Raspbery Pi's are not
+  used in production projects. Unless there is a contained read proteted flash
+  memory it is impossible to hide something on an SD card. That being said, if
+  the effort of cracking something is greater than the payout, attackers will not
+  be bothered. Misplacing an SD card with your personal project protected by the
+  tool will most likely get it formatted and used to store  kitty pictures from
+  the internet. Just try not to loose it at an infosec convention...
+
 
 * How can I protect my sensitive variable names?
 
@@ -100,6 +104,7 @@ the internet. Just try not to loose it at an infosec convention...
   scamble a variable named re. This trick only works if the variables are UNIQUE
   since it is calling sed to do insline replacement.
 
+
 * Do I really need to write code to handle anti-tamper and authorized flags?.
 
   - Depends. Mostly on how secure would you like your code to be. Not checking
@@ -108,13 +113,14 @@ the internet. Just try not to loose it at an infosec convention...
   state machine logic to separate actual code to fake code. Do not forget to add
   sensitive variables and functions to namescrabbler.
 
+
 * Why open source it if your logic can be used to attack it?
 
-  -Because sharing is fun, and more minds are better than one.
+  - Because code is meant to be shared.
 
 * Can I use it to hide my banking details..
 
-  -NO!
+  -NO! Do you use permament markets to write the password on your cards?
 
 ## Dependancies
 
@@ -126,8 +132,8 @@ libssl-dev
 ecryptfs-utils
 ~~~~~
 
-## Installation
 
+## Quick Install summary
 
 Checkout the code:
 
@@ -137,40 +143,89 @@ git clone && cd picrypt
 
 Implement your own password generation logic:
 
-~~~~~ f
+~~~~~
 nano/vim/atom usr_set_keygen.c
 ~~~~~
 
-_The hash_high is only required if LONG_HASH is used_
+*The hash_high method is only required if LONG_HASH is used*
 
 If running on the target device autocompile will autofill the information for
-the requested protecction level:
+the requested protection level:
 
 ~~~~~
 ./autocompile -c
 ~~~~~
 
-For more options issue:
+# Accessing the Hardware Info structure in ```usr_set_keygen.c```
+
+The code will pass a structure containing all the collected information to
+hash_low and hash_high methods, which need to be implemented by the user.
+hash_low is the one setting the 8 low bytes (Big Endian Notation) and the
+optional hash_high generates the 8 high bytes and is only used when LONG_HASH
+is set.
+
+It is important to note that user set methods will be called once or twice
+during code execution
+* Once if the anti-tamper flag is not asserted
+* Twice if the system detects a debugger. Being run through a debugger means
+someone is looking closer into the logic of the binary. for that purpose the
+user defined function is being called BEFORE any of the other fields are parsed
+enabling the user terminate the program and protect the hardcoded values.
+
+The serial number and the boolean summary of the tests can be copied to local
+values by dereferencing the pointers
 
 ~~~~~
-./autocompile -h
+const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
+const bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
 ~~~~~
+
+When authorized is set to false it could indicate that one or more of the tests
+failed.
+
+
+Strings are passed as a pointer, and do not need dereferencing.
+
+~~~~~
+const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
+const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
+~~~~~
+
+DO NOT use const char * comparison in those methods ie strcmp(sha,"aabbcc..")
+since that will expose a sensitive strings to code inspection.
+
+Either convert them
+to numbers or user ```_STRHT_ENCRPT_``` macro to encypt it and
+```_STRHT_CMP_```  to compare it in encrypted format.Use strhide_test.c or
+picrypt_main.c as reference.
+
+A set of macros is also provided for convenience:
+
+~~~~~
+const bool authorized = _USRST_AUTHORIZED_;
+const bool anti-tamper =  _USRST_ANTI_TAMPER_;
+const uint64_t serial = _USRST_SERIAL_ ;
+const char *machine_id = _USRST_MACHINEID_;
+const char *sha =  _USRST_SHA1_;
+~~~~~
+
+## Manual complilation
 
 For manual compilation edit ```authorized_hwd.h```
 
 There are 5 protection levels 4 of which are currently implemented.
 
-1. CARE_BEAR:     No checks.
-2. SCRIPT_KIDDY:  Chgecks the CPU serial of the board.
-3. ARCH_USER:     Checks the CPU serial and the Linux software unique ID.
-4. PEN_TESTER:    Check CPU Serial, Software ID and a user's defined file's SHA1
-5. TIN_FOIL_HAT:  (Not implemented) Gets an extra key from a hardware dongle
+1. ```CARE_BEAR```:     No checks.
+2. ```SCRIPT_KIDDY```:  Checks the CPU serial of the board.
+3. ```ARCH_USER```:     Checks the CPU serial and the Linux software unique ID.
+4. ```PEN_TESTER```:    Check CPU Serial, Software ID and a user's defined file's SHA1
+5. ```TIN_FOIL_HAT```:  (Not implemented) Gets an extra key from a hardware dongle
 
-Protection is implemented as a non terminating flag, that will be asserted if
-a single test defined by the protection level fails. It is up to the user's
-discretion on what to do with it. I would highly recommend to NOT terminate the
-program or print an error message, just modify the result to make brute force
-harder.
+Protection is implemented as a non execution terminating flag, that will
+be asserted if a single test defined by the protection level fails.
+It is up to the user's discretion on what to do with it.
+I would highly recommend to NOT exit the program while printng an error message,
+just modify the result to make brute force harder.
 
 Setting a protection level and NOT providing the required field for it on the
 header is not critical and will not break the code. Not defined code will be
@@ -220,7 +275,7 @@ issuing ```cat /proc/cpuinfo | grep Serial | awk '{print $3}'```
 3. The sha1 can be found by issuing```sha1sum /etc/fstab```
 4. PI_VER is the version of raspbeery pi, currently only 2 ad 3 are supported.
 5. Setting STRHT_USR_SALT is optional but important because it will uniquely
-maps your strings to an integer space.
+map your strings to an integer symbol space.
 6. Defining LONG_HASH will produce 16 Byte passwords
 7. Fake serial is used to fix the result of serial detection method, to
 facilitate development on PC.
@@ -233,19 +288,84 @@ as strings.
 Finally compile and install.
 
 ~~~~~
-Make clean
-Make
+make clean
+make
 sudo Make install
 ~~~~~
 
-Assuming authorized_hwd.h has the commented out entry of //#define DEVEL, which
-is the case after a fresh checkout, you can invoke a development build for
-increased verbosity.
+**ALWAYS** clean and git reset after a normal make, since namescrabbler will heavily
+modify the files. User code in usr_set_keygen should be commited
+on your build branch before doing so.
 
 ~~~~~
-Make clean & Make devel
-gdb ...
+git config user.name "Your Name" && git config user.email "me@somemail.com"
+git add usr_set_keygen.c && git commit -m "My encryption algorythm"
+make clean
+git reset --hard
 ~~~~~
+
+Assuming authorized_hwd.h has the commented out entry of ```//#define DEVEL```,
+you can invoke a development build for increased verbosity.
+
+~~~~~
+make clean & make devel
+gdb ...
+sudo make install_devel
+~~~~~
+
+Development builds are usefull because they do not scramble fucntion and
+variable names, and they contain extra verbosity.
+
+_Running gdb in arm architecture with libcrypt will crash unless gdb is asked
+to ignore SIGILL: _
+
+ ```handle SIGILL nostop noprint```
+
+
+## Autocompile
+
+Autocompile is a simple helper that will automatically collect the hardware
+information and compile the binary for the host system.A copy of the binary
+will also be moved into the bin folder.
+
+By default it generates an 8 byte password, with ```PEN_TESTER``` level of protection.
+
+Since this level requires a keyfile, if it is not specified by the user, it will
+build a list and randomly choose, asking user to verify it. Once a file is
+selected, the system will create an exact copy with a different name, and use
+that as the keyfile.
+
+Altenatively a keyfile can be specified with the ```-k /absolute_path/filename```
+argument.
+
+Full list of supported arguments:
+
+~~~~~
+./autocompile -h
+-h, --help            show this help message and exit
+--reset, -r           Reset current units machine-id
+--compile, -c         Compile all
+--keyfile KEYFILE, -k KEYFILE
+                     Use file as sha1 keyfile
+--lhash, -l           create double length password
+--nobackup, -n        Remove authorized_hardware.h and don't restore
+--fake FAKE_SERIAL, -f FAKE_SERIAL
+                     Add a fake serial to detection method
+--devel, -d           Executable will print out auth failures
+--protection PROTECTION, -p PROTECTION
+                     Set the protection level
+--bulk BULK, -b BULK  Set Bulk compile directory (Not Implemented)
+~~~~~
+
+It is recommended to issue ```--reset``` when compiling at a device booted from  a
+cloned SD card image, since that will regenerate a new unique machine-id
+for that device.
+
+By default the scripts attempts to respect any authorized_hwd.h files the user
+has, to back it up and restore it after all operataions have completed. The
+```--nobackup``` directive will just overwrite the file and not restore it.
+
+## Encrypting/ Decrypting directories
 
 In order to encrypt one or more directories use the similarly named directive
 
@@ -265,12 +385,13 @@ sudo picrypt --mount /opt/code_you_are_ashamed_of
 that he provided an absolute path, and that ecryptfs-utils is installed onto
 the system **
 
+## Automatically mount directory/ies on start-up
+
 Makefile can create systemd hooks that will automount encrypted directories
 The first call will create the unit file for the directory specified as target:
 
 ~~~~~~
 sudo make automount_enable target=/opt/your_awesome_code
-
 ~~~~~~
 
 Additional directories can be added using the add directive:
@@ -285,43 +406,3 @@ Automount can be disabled by calling automount_disable:
 ~~~~~~
 sudo make automount_disable
 ~~~~~~
-
-
-_Running gdb in arm architecture with libcrypt will crash unless gdb is asked
-to ignore SIGILL: _
-
- ```handle SIGILL nostop noprint```
-
-## Accessing the Hardware Info structure in ```usr_set_keygen.c```
-
-The code will pass a structure containing all the collected information to
-hash_low and hash_high methods, which need to be implemented by the user.
-hash_low is the one setting the 8 low bytes (Big Endian Notation) and the
-optional hash_high generates the 8 high bytes and is only used when LONG_HASH
-is set.
-
-The serial number and the boolean summary of the tests can be copied to local
-values by dereferencing the pointiers
-
-~~~~~
-const uint64_t serial = *(uint64_t *)hwinfo_get_pl(hwinfo, HW_SERIAL);
-const bool authorized = *(bool *)hwinfo_get_pl(hwinfo, HW_AUTHORIZED);
-~~~~~
-
-Wehn Authorized is set to false it could indicate that one or more of the tests
-failed or the anti-tamper detection was trigger.
-
-
-Strings are passed as a pointer, and do not need dereferencing.
-
-~~~~~
-const char *machine_id = (char *)hwinfo_get_pl(hwinfo, HW_MACHINE_ID);
-const char *sha =  (char *)hwinfo_get_pl(hwinfo, HW_SHA1);
-~~~~~
-
-DO NOT use const char * comparison in those methods ie strcmp(sha,"aabbcc..")
-since that will expose a sensitive string attacker.
-
-Either convert them
-to numbers or user _STRHT_ENCRPT_ macro to encypt it and _STRHT_CMP_ to compare
-it in encrypted format.Use strhide_test.c or picrypt_main.c as refference.
