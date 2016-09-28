@@ -21,6 +21,7 @@ uint8_t lk_mount(const char * key, const char * path)
   const uint16_t cmd_sz = LK_MNT_CMD_MAX_SZ +
                           (LK_SIG_SZ * 2) +
                           LK_SER_SZ +
+                          strlen(LK_NO_STDOUT) +
                           (strlen(path) * 2);
   char cmd[cmd_sz];
   char sigs[2][LK_SIG_SZ];
