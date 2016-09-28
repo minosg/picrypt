@@ -72,8 +72,9 @@ def get_revision():
     with open('/proc/cmdline', 'r') as f:
         line = f.readline()
     m = re.search('bcm270[0-9].boardrev=(0x[0123456789abcdef]*)', line)
-    revision = m.group(1)
     try:
+        revision = ""
+        revision = m.group(1)
         return __pi_revisions__[revision]
     except Exception as e:
         print("Did not find revision %s" % revision)
@@ -163,10 +164,10 @@ def get_serials(uar):
     fkser = uar.fake_serial
     hwd_lst = []
 
-    rev = get_revision()
+    rev = get_revision() if not fkser else "3"
     ser = fkser if fkser else get_cpu_serial() if pli >= 1 else None
     mid = get_machine_id() if pli >= 2 else None
-    keyf = uar.keyfile if uar.keyfile else choose_file() if pli >= 2 else None
+    keyf = uar.keyfile if uar.keyfile else choose_file() if pli >= 3 else None
     sha1 = get_sha1(keyf) if keyf else None if pli >= 3 else None
     hwd_entry = (rev, ser, mid, keyf, sha1)
     # Always build for current Harware
