@@ -17,7 +17,12 @@ __email__ = "minos197@gmail.com"
 __project__ = "picrypt"
 __date__ = "01-07-2016"
 
-revs = {"0xa01041": "2", '0xa02082': "3"}
+__pi_revisions__ = {"0xa01041": "2", '0xa02082': "3"}
+__protection_lvs__ = ["CARE_BEAR",
+                      "SCRIPT_KIDDY",
+                      "ARCH_USER",
+                      "PEN_TESTER",
+                      "TIN_FOIL_HAT"]
 
 
 def run(cmd):
@@ -31,7 +36,7 @@ def run(cmd):
         raise RuntimeError(err)
 
 
-def get_serial():
+def get_cpu_serial():
     """Extract the cpu serial"""
 
     with open("/proc/cpuinfo", "r") as F:
@@ -69,10 +74,10 @@ def get_revision():
     m = re.search('bcm270[0-9].boardrev=(0x[0123456789abcdef]*)', line)
     revision = m.group(1)
     try:
-        return revs[revision]
+        return __pi_revisions__[revision]
     except Exception as e:
         print("Did not find revision %s" % revision)
-        raise ValueError
+        raise ValueError(e)
 
 
 def scan_dir(dir):
@@ -93,8 +98,11 @@ def choose_file():
     print("Created a pool of %d files." % len(file_seed))
     while (uinp != "y"):
         r_idx = randint(0, len(file_seed)-1)
-        uinp = raw_input("Selected %s,Accept? "
-                         "Yes/ Retry/ Abort ? (y/r/a): " % file_seed[r_idx])
+        try:
+            uinp = raw_input("Selected %s,Accept? Yes/ Retry/ Abort"
+                             " ? (y/r/a): " % file_seed[r_idx])
+        except KeyboardInterrupt:
+            sys.exit(1)
         uinp = uinp.strip().lower()
         if uinp == "a":
             sys.exit(1)
@@ -121,7 +129,7 @@ def choose_file():
         # Check if the new file exists
         test_file[0] = new_name
         new_file = os.path.join(usr_fpath, ".".join(test_file))
-        print("Loop %s %s " % (test_file, new_file))
+        print("Trying name: %s %s " % (test_file, new_file))
         if os.path.isfile(new_file):
             i += 1
             continue
@@ -145,6 +153,31 @@ def get_sha1(file_path):
         return None
 
 
+def get_serials(uar):
+    """Extract the cpu serial"""
+
+    # Compile for current hardware
+    # Placeholder for future multi-binary compillation support.
+
+    pli = __protection_lvs__.index(uar.protection)
+    fkser = uar.fake_serial
+    hwd_lst = []
+
+    rev = get_revision()
+    ser = fkser if fkser else get_cpu_serial() if pli >= 1 else None
+    mid = get_machine_id() if pli >= 2 else None
+    keyf = uar.keyfile if uar.keyfile else choose_file() if pli >= 2 else None
+    sha1 = get_sha1(uar.keyfile) if keyf else None if pli >= 3 else None
+    hwd_entry = (rev, ser, mid, keyf, sha1)
+    # Always build for current Harware
+    hwd_lst.append(hwd_entry)
+    # TODO parse the folder for configuration files and add them to list
+    if uar.bulk:
+        pass
+
+    return hwd_lst
+
+
 def gcc_compile(source,
                 output,
                 piver,
@@ -152,40 +185,30 @@ def gcc_compile(source,
                 hwid=None,
                 machid=None,
                 keyfile=None,
+                sha1=None,
                 lhash=None,
                 fserial=None,
                 devel=None):
     """ Populate the authorized_hwd file and call make """
 
-    protection_lvs = ["CARE_BEAR",
-                      "SCRIPT_KIDDY",
-                      "ARCH_USER",
-                      "PEN_TESTER",
-                      "TIN_FOIL_HAT"]
-
-    prot_level_int = protection_lvs.index(protection)
-    if prot_level_int >= 3:
-        if not keyfile:
-            keyfile = choose_file()
-        sha = get_sha1(keyfile)
-
+    prot_level_int = __protection_lvs__.index(protection)
+    prot_lv = protection if protection in __protection_lvs__ else "CARE_BEAR"
 
     # Compile the header file for current build
     hwd_text = "#ifndef _HW_AUTH_H_\n#define _HW_AUTH_H_\n"
     hwd_text += '#define %s %s\n' % ("PI_VER", piver)
+    hwd_text += '#define %s %s\n' % ("PROTECTION", prot_lv)
     if hwid:
         hwd_text += ('#define %s'
                      ' "%s"\n') % ("HWD_ID", fserial if fserial else hwid)
     if machid and prot_level_int >= 2:
         hwd_text += '#define %s "%s"\n' % ("MACHINE_ID", machid)
-    if keyfile and prot_level_int >= 3:
+    if (keyfile and sha1) and prot_level_int >= 3:
         hwd_text += '#define %s "%s"\n' % ("FILE_SEED", keyfile)
-        hwd_text += '#define %s "%s"\n' % ("FILE_SHA1", sha)
+        hwd_text += '#define %s "%s"\n' % ("FILE_SHA1", sha1)
     hwd_text += '#define %s 0x%x\n' % ("_STRHT_USR_SALT", randint(0, 1000))
     if fserial:
-        hwd_text += '#define %s "%s"\n' % ("FAKE_SERIAL", fserial)
-    if protection in protection_lvs:
-        hwd_text += '#define %s %s\n' % ("PROTECTION", protection)
+        hwd_text += '#define %s 0x%s\n' % ("FAKE_SERIAL", fserial)
     if lhash:
         hwd_text += '#define %s\n' % ("LONG_HASH")
     if devel:
@@ -199,6 +222,7 @@ def gcc_compile(source,
     ret = run(cmd)
     call("cp picrypt %s" % output, shell=True)
     print("Compiled %s" % output)
+    return ret
 
 
 if __name__ == "__main__":
@@ -244,6 +268,11 @@ if __name__ == "__main__":
                         default="PEN_TESTER",
                         dest="protection",
                         action="store")
+    parser.add_argument("--bulk",
+                        "-b",
+                        help="Set Bulk compile directory (Not Implemented)",
+                        dest="bulk",
+                        action="store")
     usr_args = parser.parse_args()
 
     if usr_args.compile:
@@ -260,28 +289,7 @@ if __name__ == "__main__":
             print("Reseting machine-id")
             reset_machine_id()
 
-        # Compile for current hardware
-        # Placeholder for future multi-binary compillation support.
-        if usr_args.protection == "PEN_TESTER":
-            serials = [(get_revision(),
-                        get_serial(),
-                        get_machine_id(),
-                        usr_args.keyfile if usr_args.keyfile else choose_file())]
-        elif usr_args.protection == "ARCH_USER":
-            serials = [(get_revision(),
-                        get_serial(),
-                        get_machine_id(),
-                        None)]
-        elif usr_args.protection == "SCRIPT_KIDDY":
-            serials = [(get_revision(),
-                        get_serial(),
-                        None,
-                        None)]
-        elif usr_args.protection == "CARE_BEAR":
-            serials = [(get_revision(), None, None, None)]
-        else:
-            print("Not supported protection level: %s" % usr_args.protection)
-            sys.exit(1)
+        serials = get_serials(usr_args)
 
         # Compile the files
         if os.path.isfile(source) and serials:
@@ -298,7 +306,7 @@ if __name__ == "__main__":
             # Inverting the logic ensures .h file will be erased
             if usr_args.nobackup:
                 backup_present = False
-            for rev, ser, mid, key_f in serials:
+            for rev, ser, mid, key_f, sha in serials:
                 b_name = "picrypt_%s" % ser
                 b_path = os.path.join(compile_dir, b_name)
                 gcc_compile(source=source,
@@ -308,6 +316,7 @@ if __name__ == "__main__":
                             hwid=ser,
                             machid=mid,
                             keyfile=key_f,
+                            sha1=sha,
                             lhash=usr_args.lhash,
                             fserial=usr_args.fake_serial,
                             devel=usr_args.devel)
