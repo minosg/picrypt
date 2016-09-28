@@ -33,7 +33,7 @@ uint8_t lk_mount(const char * key, const char * path)
 
   /* Add the key to the keychain */
   lk_add_keyhcain(key, sigs);
-  printf("S1: %s S2: %s\n", sigs[0], sigs[1]);
+
   /* Compose the decrypt command */
   snprintf(cmd,
            sizeof(cmd),
