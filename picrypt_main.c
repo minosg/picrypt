@@ -34,7 +34,7 @@ int main(int argc, char **argv)
                    ab_breakp_det((RAM_ADDR_SZ)&pc_hash_enc)+\
                    ab_breakp_det((RAM_ADDR_SZ)&sh_encrypt_string)+\
                    ab_breakp_det((RAM_ADDR_SZ)&hw_get));
-                   
+
   #ifdef MACHINE_ID
   pc_bpoint_dt_d += ab_breakp_det((RAM_ADDR_SZ)&pc_soft_machine_id);
   #endif /* MACHINE_ID */
@@ -64,11 +64,6 @@ int main(int argc, char **argv)
     /* Call the user method and let him handle with antitamper without
     exposing more parts of the code */
     pc_hash_enc(pc_hardware_info_d, pc_hash_key_e, sizeof(pc_hash_key_e));
-
-    /* Just in case the user did not exit the program, ensure code execution
-    ends here (And give a fake password just in case )*/
-    printf("Password: %u\n", PI_DIGITS);
-    exit(0);
   }
 
   #ifdef HWD_ID
