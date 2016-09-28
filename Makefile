@@ -66,10 +66,17 @@ namescrabbler_done: namescrabbler
 install: picrypt
 	cp ./picrypt /usr/bin
 
+install_devel: devel
+	cp ./picrypt /usr/bin
+
 uninstall:
 	rm -f /usr/bin/picrypt
 
 automount_enable:
+	@if [ -z "$(target)" ]; then\
+		echo "Target directory is not set, set is using target=/path_to_dir";\
+		exit 1;\
+	fi
 	@echo "[Unit]" >> /lib/systemd/system/picrypt.service
 	@echo "Description=PiCrypt Key Creator" >> /lib/systemd/system/picrypt.service
 	@echo "DefaultDependencies=no" >> /lib/systemd/system/picrypt.service
@@ -84,6 +91,10 @@ automount_enable:
 	systemctl enable picrypt
 
 automount_disable:
+	@if [ -z "$(target)" ]; then\
+		echo "Target directory is not set, set is using target=/path_to_dir";\
+		exit 1;\
+	fi
 	@systemctl disable picrypt
 	@rm -rf /lib/systemd/system/picrypt.service
 	@systemctl daemon-reload
