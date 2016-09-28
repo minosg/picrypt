@@ -31,10 +31,16 @@
 #define __STDC_FORMAT_MACROS
 #define CPU_SER_SIZE    8                 ///< Len of serial in Bytes
 #define MACHINE_ID_SIZE 32                ///< Len of machine-id in Bytes
-#define PI_DIGITS 3141592653u             ///< Digits of PI as tribute/seed
-#define RAM_FILE "/tmp/lock.key"          ///< Location and name of RAM file
-#define CPU_FILE "/proc/cpuinfo"          ///< Used in CPU Serial Extraction
+#define PI_DIGITS       3141592653u       ///< Digits of PI as tribute/seed
+#define RAM_FILE        "/tmp/lock.key"   ///< Location and name of RAM file
+#define CPU_FILE        "/proc/cpuinfo"   ///< Used in CPU Serial Extraction
 #define MACHINE_ID_FILE "/etc/machine-id" ///< Used in SOftware ID Extraction
+
+#define _USRST_AUTHORIZED_  (*(bool *)hw_get(hwinfo, HW_AUTHORIZED))
+#define _USRST_ANTI_TAMPER_ (*(bool *)hw_get(hwinfo, HW_ANTITAMPER))
+#define _USRST_SERIAL_      (*(uint64_t *)hw_get(hwinfo, HW_SERIAL))
+#define _USRST_MACHINEID_   ((char *)hw_get(hwinfo, HW_MACHINE_ID))
+#define _USRST_SHA1_        ((char *)hw_get(hwinfo, HW_SHA1))
 
 #if PI_VER == 2
     #define CPU_SER_OFFSET  1103
