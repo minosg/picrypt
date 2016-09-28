@@ -160,7 +160,7 @@ int main(int argc, char **argv)
   is inserted by default. Developper mode enables this behavior */
   #ifdef DEVEL
   if (!pc_flag_permitted_d) {
-    printf("This is the password you are looking for...\n"
+    printf("This is not the password you are looking for...\n"
            "( You pirate !!! )\n");
     exit(1);
   }
