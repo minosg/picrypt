@@ -9,7 +9,8 @@
  * In order to protect from attach vectors on common characters ie "/" used   *
  * in file paths, a USER Input salt is defined to ensure the uniqueness of    *
  * the represention. It is advised to change is and choose any number in the  *
- * range of 1 to 32511 or 0x7EFF, but smaller numbers create more randomness. *
+ * range of 1 to 0x80. It can suppport larger numbers up to 0x7EFF,           *
+ * but smaller numbers create more randomness.                                *
  *                                                                            *
  * Author: Minos Galanakis                                                    *
  * Email: minos197@gmail.com                                                  *
@@ -63,7 +64,9 @@ void sh_print_array(int16_t *array, const uint16_t byte_size);
  *
  * @return A pointer to the output buffer
  */
-char * sh_array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff);
+char * sh_array_to_header(int16_t *array,
+                          const uint16_t byte_size,
+                          char* r_buff);
 
 /**
  * Ecnryption function that hides a string inside a signed int array

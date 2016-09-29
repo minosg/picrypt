@@ -24,11 +24,13 @@
 void sh_print_array(int16_t *array, const uint16_t byte_size)
 {
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
-    printf("Byte %d -> 0x%04X\n", i, array[i]);
+    printf("Byte %d -> 0x%04X\n", i, (uint16_t)array[i]);
   }
 }
 
-char * sh_array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff)
+char * sh_array_to_header(int16_t *array,
+                          const uint16_t byte_size,
+                          char* r_buff)
 {
   uint16_t idx = 1;
 
@@ -36,10 +38,10 @@ char * sh_array_to_header(int16_t *array, const uint16_t byte_size, char* r_buff
   for (uint8_t i=0; i<_STRHT_ARR_LEN(array, byte_size); i++) {
     /* Do not put comma in first entry*/
     if (i==0)  {
-      snprintf (r_buff+idx, 7, "0x%04X", array[i]);
+      snprintf (r_buff+idx, 7, "0x%04X", (uint16_t)array[i]);
       idx--;
     } else {
-      snprintf (r_buff+idx, 8, ",0x%04X", array[i]);
+      snprintf (r_buff+idx, 8, ",0x%04X", (uint16_t)array[i]);
     }
     idx=idx+7;
   }
@@ -52,7 +54,8 @@ void sh_encrypt_string(char const *raw_string,
                     int16_t *output,
                     const uint16_t byte_size)
 {
-  char c;
+  int16_t crnt_chr;
+  int16_t prev_chr;
   /* Do a small sanity check on the buffers sizes */
   if ((strlen(raw_string) * 2) != byte_size) {
     printf("Warning,  wrongly allocated memory for encrypt buffer:"
@@ -62,26 +65,31 @@ void sh_encrypt_string(char const *raw_string,
   }
   /* Limit the number of writes to buffer element count */
   for (uint8_t i=0; i<_STRHT_ARR_LEN(output, byte_size); i++) {
-    if (!i)
-    {
+    if (!i) {
       /* Random time based seed */
       srand (time(NULL));
+
       /* Offset the first character using ! as the starting point of the
       ASCII charset and move it per user salt. */
-      c = raw_string[i] - _STRHT_FIRST_CHAR;
-    }
-    else
-    {
+      crnt_chr = raw_string[i] - _STRHT_FIRST_CHAR;
+
+      /* Store a refference to the last encoded character for distance calc*/
+      prev_chr = crnt_chr;
+    } else {
       /* Random time and previous element based seed */
       srand (time(NULL)+output[i-1]);
 
-      /* Every consecutive character is cacluated as the distance to the
+      /* Every consecutive character is cacluated as the ASCII distance to the
       previous taking into consideration offset and salt. */
-      c = (raw_string[i]- _STRHT_FIRST_CHAR) - raw_string[i-1];
+      crnt_chr = (raw_string[i]- _STRHT_FIRST_CHAR) - prev_chr;
+
+      /* Store a refference to the last encoded character for distance calc*/
+      prev_chr = raw_string[i]- _STRHT_FIRST_CHAR;
     }
     /* Store the data using random for bits 0-3 and 12-15 with random data.
      Set bits 4 to 11 with message shifted according to user defined salt */
-    output[i] = ((rand() % INT16_MAX) & 0xF00F) | (c + _STRHT_USR_SALT) << 4;
+    output[i] = ((rand() % INT16_MAX) & 0xF00F) |\
+                ((crnt_chr + _STRHT_USR_SALT) << 4);
   }
   return;
 }
@@ -93,7 +101,7 @@ char* sh_decrypt_string(int16_t const *encr_string,
                      const uint16_t cbuff_byte_size)
 {
   output[0] = 0;
-  char c;
+  int16_t c;
   uint8_t len = _STRHT_ARR_LEN(output, cbuff_byte_size);
 
   /* Do a small sanity check on the buffers sizes */
@@ -104,14 +112,11 @@ char* sh_decrypt_string(int16_t const *encr_string,
            ibuff_byte_size);
   }
   for (uint8_t i=0; i<len-1; i++) {
-    /* First character is directly decoded by masking the junk
-    bytes and bit shifting */
-    if (!i)  c = (encr_string[i] & 0x0FF0) >> 4;
-    /* Consecutive characters are decoded in respect to previous character */
-    else c =  ((encr_string[i] & 0x0FF0) >> 4) + output[i-1];
+    /* Remove the salt and bit shift */
+    c = ((encr_string[i] & 0x0FF0) >> 4) -_STRHT_USR_SALT;
 
-    /* Finally remove user salt and offset */
-    output[i] = c + _STRHT_FIRST_CHAR -_STRHT_USR_SALT;
+    /* When first char remove offset else calculate absolute distance */
+    output[i] = c + ((i) ? output[i-1] : _STRHT_FIRST_CHAR);
   }
   output[len-1]=0;
   return output;
