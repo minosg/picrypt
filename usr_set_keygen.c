@@ -18,6 +18,35 @@ the result of your method */
 #include "authorized_hwd.h"
 #include "picrypt.h"
 
+/* Common custom anti-tamper routine */
+bool usr_anti_tamper(hw_msg_page_t * hwinfo)
+{
+  const bool antitamper = _USRST_ANTI_TAMPER_;
+
+  if (antitamper == true) {
+    printf("Anti-Tamper Warning: \n");
+    printf("Password: %u\n", PI_DIGITS);
+
+    /* if code does not exit here it will expose the buffers to debuggers.*/
+    exit(0);
+    /* If debugger jumps over the exit call, return a fake number */
+    return true;
+  }
+
+  const bool authorized = _USRST_AUTHORIZED_;
+
+  /* Program will NOT break execution when it runs on Unauthorized hardware.
+  It is REQUIRED for the user to catch the authorized and mess with the
+  algorythm producing the key. Having no feedback on weather a key is valid or
+  not makes it harder for bruteforce attack to work*/
+
+  if (authorized != true) {
+    printf("Not Authorized\n");
+    return true;
+  }
+  return false;
+}
+
 /* Calculate the low bits of the hash */
 uint64_t hash_low(hw_msg_page_t * hwinfo)
 {
@@ -36,35 +65,29 @@ uint64_t hash_low(hw_msg_page_t * hwinfo)
   const char *sha =  _USRST_SHA1_;
   */
 
-  /*Anti Tamper will call user's function BEFORE any other data is checked,
-  so the logic needs to terminate the code after catching it */
-  const bool antitamper = _USRST_ANTI_TAMPER_;
-  if (antitamper == true) {
-    printf("Anti-Tamper Warning: \n");
-    printf("Password: %u\n", PI_DIGITS);
+  uint64_t ret = 0;
 
-    /* if code does not exit here it will expose the buffers to debuggers.*/
-    exit(0);
-    /* If debugger jumps over the exit call, return a fake number */
-    return (uint64_t)(PI_DIGITS);
-  }
-
-  uint8_t ret = 1;
-  const bool authorized = _USRST_AUTHORIZED_;
-
-  /* Program will NOT break execution when it runs on Unauthorized hardware.
-  It is REQUIRED for the user to catch the authorized and mess with the
-  algorythm producing the key. Having no feedback on weather a key is valid or
-  not makes it harder for bruteforce attack to work*/
-
-  if (authorized != true) {
+  if (usr_anti_tamper(hwinfo) == true) {
     printf("Not Authorized\n");
-    ret = ret << 3;
+    ret = (uint64_t)(PI_DIGITS);
+  } else {
+    /* Insert your own logic here */
+    ret = 1;
   }
   return (uint64_t)(ret);
 }
 
 /* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
-uint64_t hash_high(hw_msg_page_t * hwinfo){
-  return (uint64_t)(2);
+uint64_t hash_high(hw_msg_page_t * hwinfo)
+{
+  uint64_t ret = 0;
+
+  if (usr_anti_tamper(hwinfo) == true) {
+    printf("Not Authorized\n");
+    ret = (uint64_t)(PI_DIGITS);
+  } else {
+    /* Insert your own logic here */
+    ret = 2;
+  }
+  return (uint64_t)(ret);
 }
