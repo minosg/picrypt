@@ -18,25 +18,30 @@ SSLFLAGS= -lssl -lcrypto
 
 all: picrypt
 
-picrypt :namescrabbler_done ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
-adb.o lock.o picrypt_main.o picrypt.o
+picrypt : devel_disable namescrabbler_done ppprocessor strhide.o hwinfo.o \
+usr_set_keygen.o adb.o lock.o picrypt_main.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main.o picrypt.o adb.o \
-		lock.o -o picrypt $(SSLFLAGS)
+	lock.o -o picrypt $(SSLFLAGS)
 
-devel: ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
+devel: devel_enable ppprocessor strhide.o hwinfo.o usr_set_keygen.o \
 adb.o lock.o picrypt_main_devel.o picrypt.o
 	$(CC)  strhide.o hwinfo.o usr_set_keygen.o picrypt_main_devel.o picrypt.o \
 	adb.o lock.o -o picrypt $(SSLFLAGS)
 
 ppprocessor : 	ppprocessor.o strhide.o
-			$(CC) ppprocessor.o strhide.o -o ppprocessor
-			./ppprocessor
+	$(CC) ppprocessor.o strhide.o -o ppprocessor
+	./ppprocessor
+
+devel_enable:
+	sed -i "s:^//#define DEVEL:#define DEVEL:g" authorized_hwd.h
+
+devel_disable:
+	sed -i "s:^#define DEVEL://#define DEVEL:g" authorized_hwd.h
 
 picrypt_main.o : picrypt_main.c picrypt.h authorized_hwd.h
 	$(CC) $(CFLAGS) picrypt_main.c
 
 picrypt_main_devel.o : picrypt_main.c picrypt.h authorized_hwd.h
-	sed -i "s://#define DEVEL:#define DEVEL:g" authorized_hwd.h
 	$(CC) $(CFLAGS_DBG) picrypt_main.c -o picrypt_main_devel.o
 
 picrypt.o :  picrypt.c picrypt.h authorized_hwd.h
