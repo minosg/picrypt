@@ -207,7 +207,7 @@ def gcc_compile(source,
     if (keyfile and sha1) and prot_level_int >= 3:
         hwd_text += '#define %s "%s"\n' % ("FILE_SEED", keyfile)
         hwd_text += '#define %s "%s"\n' % ("FILE_SHA1", sha1)
-    hwd_text += '#define %s 0x%x\n' % ("_STRHT_USR_SALT", randint(0, 1000))
+    hwd_text += '#define %s 0x%x\n' % ("_STRHT_USR_SALT", randint(0, 128))
     if fserial:
         hwd_text += '#define %s 0x%s\n' % ("FAKE_SERIAL", fserial)
     if lhash:
