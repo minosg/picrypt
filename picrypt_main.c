@@ -206,6 +206,12 @@ int main(int argc, char **argv)
   /* Calculate the password hash */
   pc_hash_enc(pc_hardware_info_d, pc_hash_key_e, sizeof(pc_hash_key_e));
 
+  /* Call the custom input handling method */
+  #ifdef INPT_TOKEN
+  if (inp_idx) {
+    input_method(pc_hardware_info_d, _STRHT_DECRPT_(pc_hash_key_e, pc_hash_key_d));
+  }
+  #endif /* INPT_TOKEN */
   if (argc == 1) {
     pc_help(argv[0]);
   #ifdef DEVEL

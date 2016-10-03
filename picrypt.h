@@ -211,4 +211,14 @@ char * hash_low(hw_msg_page_t * hwinfo, char * out_buff);
  */
 char * hash_high(hw_msg_page_t * hwinfo, char * out_buff);
 
+/**
+ * Method Called to handle custom user input
+ *
+ * @param hwinfo Data structure containing variable hardware information.
+ * @param hash Refferece to the calculated hash for this instance. 
+
+ *
+ */
+void input_method(hw_msg_page_t * hwinfo, char * hash);
+
 #endif /* _PICRYPT_H_ */
