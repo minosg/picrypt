@@ -22,6 +22,7 @@
 #define HWD_SRC     "/dev/ttyUSB0"                    ///< Port of HW dongle
 #define PI_VER     3                                  ///< PI Board Version
 #define PROTECTION PEN_TESTER                          ///< Level of protection
+#define INPT_TOKEN "knockknock"                       ///< Permit input from cmd 
 
 #define _STRHT_USR_SALT 0x71                          ///< Override String Salt
 

@@ -166,6 +166,40 @@ int main(int argc, char **argv)
   }
   #endif /* DEVEL */
 
+  #ifdef INPT_TOKEN
+  int16_t pc_input_token_hd_e[] = INPT_TOKEN;
+  const uint16_t pc_tken_sz = sizeof(pc_input_token_hd_e) / sizeof(int16_t);
+  int16_t pc_input_token_rt_e[pc_tken_sz];
+  uint8_t inp_idx = 0;
+  if (argc >= 4) {
+    /* Go through the arguments */
+    for (uint8_t k=0; k < argc; k++) {
+      /* Need two extra arguments after input */
+      if (!strcmp(argv[k],"--input") && (argc - k) >= 2) {
+        inp_idx = k + 1;
+        break;
+      }
+    }
+    /* If input has been detected proccess it */
+    if (inp_idx != 0) {
+      if (strlen(argv[inp_idx]) == pc_tken_sz) {
+        _STRHT_ENCRPT_(argv[inp_idx], pc_input_token_rt_e);
+        if (_STRHT_CMP_(pc_input_token_rt_e, pc_input_token_hd_e)){
+          hw_msg_add(pc_hardware_info_d, HW_USR_INPUT, argv[inp_idx + 1]);
+        #ifdef DEVEL
+        } else {
+          printf("Input Token Miss-Match\n");
+        #endif /* DEVEL */
+        }
+      #ifdef DEVEL
+      } else {
+        printf("Input Token Size Miss-Match\n");
+      #endif /* DEVEL */
+      }
+    }
+  }
+  #endif /* INPT_TOKEN */
+
   /* Add the permitted variable to the data structure */
   hw_msg_add(pc_hardware_info_d, HW_AUTHORIZED,  (bool *)&pc_flag_permitted_d);
 

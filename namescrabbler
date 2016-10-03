@@ -66,7 +66,10 @@ variables = ["pc_brpoint_det_d",
              "pc_flag_permitted_d",
              "pc_hardware_info_d",
              "pc_hash_key_e",
-             "pc_hash_key_d"]
+             "pc_hash_key_d",
+             "pc_input_token_hd_e",
+             "pc_tken_sz",
+             "pc_input_token_rt_e"]
 
 files = ["adb.h",
          "authorized_hwd.h",

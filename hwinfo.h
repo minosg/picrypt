@@ -32,7 +32,8 @@ typedef enum hw_data_type {
   HW_SHA1          = 3, ///< Calculated SHA1 hash
   HW_DNGLE_KEY     = 4, ///< CPU Serial, Software, and Random File SHA
   HW_AUTHORIZED    = 5, ///< Pass the result of the hw detection tests.
-  HW_ANTITAMPER    = 6  ///< Pass the result of Anti Tamper detection tests.
+  HW_ANTITAMPER    = 6, ///< Pass the result of Anti Tamper detection tests.
+  HW_USR_INPUT     = 7  ///< Pass user input to logic
 } hw_data_type_t;
 
 /**

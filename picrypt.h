@@ -41,6 +41,7 @@
 #define _USRST_SERIAL_      (*(uint64_t *)hw_get(hwinfo, HW_SERIAL))
 #define _USRST_MACHINEID_   ((char *)hw_get(hwinfo, HW_MACHINE_ID))
 #define _USRST_SHA1_        ((char *)hw_get(hwinfo, HW_SHA1))
+#define _USRST_UINPT_       ((char *)hw_get(hwinfo, HW_USR_INPUT))
 
 #if PI_VER == 2
     #define CPU_SER_OFFSET  1103

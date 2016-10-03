@@ -71,6 +71,9 @@ uint64_t hash_low(hw_msg_page_t * hwinfo)
     printf("Not Authorized\n");
     ret = (uint64_t)(PI_DIGITS);
   } else {
+    /* Print user input if set */
+    const char *input = _USRST_UINPT_;
+    if (input != NULL) printf("User Input %s\n", input);
     /* Insert your own logic here */
     ret = 1;
   }
