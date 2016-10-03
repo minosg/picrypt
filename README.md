@@ -442,3 +442,22 @@ picrypt --input knockknock whoisthere
 ~~~~~~
 
 Both arguemnts will pass *whoishtere* to the user_set_keygen.c methods.
+
+A new method has also been added that allows logic independant to hash
+calculations. It is being provided with the runtime hash key to allow validation
+if required.
+
+~~~~~
+/* Handle custom user input */
+void input_method(hw_msg_page_t * hwinfo,  char * hash) {
+
+  /* Print user input if set */
+  const char *input = _USRST_UINPT_;
+
+  if (input != NULL) printf("User Input: %s Hash: %s\n", input, hash);
+}
+~~~~~
+
+Please note that if the HASH generation depends on input provided through the
+```--input``` directive, can cause the logic implemented in input_method to
+dead lock.
