@@ -113,6 +113,10 @@ void hw_cat(hw_msg_page_t * hw_info_struct)
       case 6:
         str_type = "Anti-Tamper";
         break;
+
+      case 7:
+        str_type = "User Input";
+        break;
     }
 
     printf("Type Number: %d\n",current->hw_type);
