@@ -55,7 +55,8 @@ uint64_t hash_low(hw_msg_page_t * hwinfo)
   const bool anti-tamper = *(bool *)hw_get(hwinfo, HW_ANTITAMPER);
   const uint64_t serial = *(uint64_t *)hw_get(hwinfo, HW_SERIAL);
   const char *machine_id = (char *)hw_get(hwinfo, HW_MACHINE_ID);
-  const char *sha =  (char *)hw_get(hwinfo, HW_SHA1);*/
+  const char *sha =  (char *)hw_get(hwinfo, HW_SHA1);
+  const char *input = (char *)hw_get(hwinfo, HW_USR_INPUT); */
 
   /* Or use equivalent macros
   const bool authorized = _USRST_AUTHORIZED_;
@@ -63,6 +64,7 @@ uint64_t hash_low(hw_msg_page_t * hwinfo)
   const uint64_t serial = _USRST_SERIAL_ ;
   const char *machine_id = _USRST_MACHINEID_;
   const char *sha =  _USRST_SHA1_;
+  const char *input = _USRST_UINPT_;
   */
 
   uint64_t ret = 0;
