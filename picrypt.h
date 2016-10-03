@@ -195,18 +195,20 @@ void pc_help(const char* prgm);
  * User Key generation Routine for the low bits of the hash
  *
  * @param hwinfo Data structure containing variable hardware information.
+ * @param out_buff Char buffer of fixed size (9) that will store user keyword
  *
- * @return 64Bit Unsigned Integer for the encryption key
+ * @return char * to the out_buff which contains the data.
  */
-uint64_t hash_low(hw_msg_page_t * hwinfo);
+char * hash_low(hw_msg_page_t * hwinfo, char * out_buff);
 
 /**
  * User Key generation Routine for the high bits of the hash
  *
  * @param hwinfo Data structure containing variable hardware information.
+ * @param out_buff Char buffer of fixed size (9) that will store user keyword
  *
- * @return 64Bit Unsigned Integer for the encryption key
+ * @return char * to the out_buff which contains the data.
  */
-uint64_t hash_high(hw_msg_page_t * hwinfo);
+char * hash_high(hw_msg_page_t * hwinfo, char * out_buff);
 
 #endif /* _PICRYPT_H_ */

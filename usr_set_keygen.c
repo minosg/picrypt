@@ -48,7 +48,7 @@ bool usr_anti_tamper(hw_msg_page_t * hwinfo)
 }
 
 /* Calculate the low bits of the hash */
-uint64_t hash_low(hw_msg_page_t * hwinfo)
+char * hash_low(hw_msg_page_t * hwinfo, char * out_buff)
 {
   /* Uncomment any of the fields that you need to calcuate the hash key
   const bool authorized = *(bool *)hw_get(hwinfo, HW_AUTHORIZED);
@@ -79,11 +79,14 @@ uint64_t hash_low(hw_msg_page_t * hwinfo)
     /* Insert your own logic here */
     ret = 1;
   }
-  return (uint64_t)(ret);
+
+  /* Convert it to string after no more math is required */
+  snprintf(out_buff, 9, "%08" PRIx64 "", ret);
+  return out_buff;
 }
 
 /* Calculate the upper bits of the hash (only used when LONG_HASH is defined)*/
-uint64_t hash_high(hw_msg_page_t * hwinfo)
+char * hash_high(hw_msg_page_t * hwinfo, char * out_buff)
 {
   uint64_t ret = 0;
 
@@ -94,5 +97,7 @@ uint64_t hash_high(hw_msg_page_t * hwinfo)
     /* Insert your own logic here */
     ret = 2;
   }
-  return (uint64_t)(ret);
+  /* Convert it to string after no more math is required */
+  snprintf(out_buff, 9, "%08" PRIx64 "", ret);
+  return out_buff;
 }

@@ -135,12 +135,14 @@ int16_t * pc_sha1_from_en_buf_to_en_buff(int16_t const *fname,
 /* Return the hash in printable string format (Do not edit) */
 char * pc_hash_str(hw_msg_page_t * hwinfo, char * hash_buffer)
 {
-  uint64_t LB = hash_low(hwinfo);
+  char LB[9];
+  hash_low(hwinfo, LB);
   #ifdef LONG_HASH
-  uint64_t HB = hash_high(hwinfo);
-  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "%08" PRIx64 "", HB, LB);
+  char HB[9];
+  hash_high(hwinfo, HB);
+  snprintf(hash_buffer, HBUFF_SZ+1, "%s%s", HB, LB);
   #else
-  snprintf(hash_buffer, HBUFF_SZ+1, "%08" PRIx64 "", LB);
+  snprintf(hash_buffer, HBUFF_SZ+1, "%s", LB);
   #endif
   return hash_buffer;
 }
