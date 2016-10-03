@@ -39,6 +39,8 @@ information.
 * Can produce 8 and 16 bytes unlock codes.
 * Supports encryption of multiple directories using the same key.
 * Systemd suport, directories can be automatically unlocked on start-up.
+* Supports custom user input from command line, with an authentication token as
+extra security againist bruteforce attacks.
 
 ## Planned Featrues
 
@@ -207,6 +209,17 @@ const bool anti-tamper =  _USRST_ANTI_TAMPER_;
 const uint64_t serial = _USRST_SERIAL_ ;
 const char *machine_id = _USRST_MACHINEID_;
 const char *sha =  _USRST_SHA1_;
+const char *input = _USRST_UINPT_;
+~~~~~
+
+The custom command line arguments will be inlcuded only and if only the Token
+has been matched to the hardcoded one. It is advised to check for NULL when
+parsing that information.
+
+~~~~~
+/* Print user input if set */
+const char *input = _USRST_UINPT_;
+if (input != NULL) printf("User Input %s\n", input);
 ~~~~~
 
 ## Manual complilation
@@ -257,6 +270,7 @@ An example of a fully configured header file is included in the projects
 #define HWD_SRC     "/dev/ttyUSB0"                    ///< Port of HW dongle
 #define PI_VER     3                                  ///< PI Board Version
 #define PROTECTION PEN_TESTER                          ///< Level of protection
+#define INPT_TOKEN "knockknock"                       ///< Permit input from cmd
 
 #define _STRHT_USR_SALT 0x71                          ///< Override String Salt
 
@@ -284,6 +298,8 @@ tests fail.
 9. Note that APP_ID and HWD_SRC are not currently used and can be ommited.
 10. Everything but the PI_VER, SALT and FAKE_SERIAL should be defined
 as strings.
+11. INPT_TOKEN is a command line anti-bruteforce autentication.Any input
+arguments that do not contain the correct token will be ignored
 
 Finally compile and install.
 
@@ -406,3 +422,20 @@ Automount can be disabled by calling automount_disable:
 ~~~~~~
 sudo make automount_disable
 ~~~~~~
+
+## Passing in arguments to the user logic.
+
+Picrypt supports custom user input using the --input directive. Before passing
+on the arguemnts to the hash function, it will compare the provided keyword(token)
+againist the one set in the authorized_hwd.h. If they match, the next arguments
+is being passsed as custom argument.
+
+The position of the ```--input``` arguemnt is not important as long as two extra
+arguments follow it.
+
+~~~~~~
+picrypt --vhash --input knockknock whoisthere
+picrypt --input knockknock whoisthere
+~~~~~~
+
+Both arguemnts will pass *whoishtere* to the user_set_keygen.c methods.
