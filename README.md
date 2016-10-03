@@ -36,7 +36,7 @@ software parameters and build it.
 * Using hash defines to modify code space based on parameters.
 * Code is pre-processed before compillation to remove and hide sensitive
 information.
-* Can produce 8 and 16 bytes unlock codes.
+* Can produce 8 and 16 chars unlock codes in the fulla printable ASCII range.
 * Supports encryption of multiple directories using the same key.
 * Systemd suport, directories can be automatically unlocked on start-up.
 * Supports custom user input from command line, with an authentication token as
@@ -45,7 +45,7 @@ extra security againist bruteforce attacks.
 ## Planned Featrues
 
 * Harware Dongle Key.
-* Optional Password generation using the full ASCII charset.
+* ~~Optional Password generation using the full ASCII charset.~~
 * ~~Automate the proccess of protecting multiple directories.~~
 * ~~Implement a systemd friendly unlock approach.~~
 
@@ -165,6 +165,9 @@ hash_low and hash_high methods, which need to be implemented by the user.
 hash_low is the one setting the 8 low bytes (Big Endian Notation) and the
 optional hash_high generates the 8 high bytes and is only used when LONG_HASH
 is set.
+
+*User methods have been updated to produce output in ASCII RANGE so the above
+is valid only when the hash is representing bytes*
 
 It is important to note that user set methods will be called once or twice
 during code execution
