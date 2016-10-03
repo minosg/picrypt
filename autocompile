@@ -56,7 +56,6 @@ def reset_machine_id():
             continue
     call("/bin/systemd-machine-id-setup 2> /dev/null", shell=True)
     print("Changed id from %s to: %s" % (ref_mid, get_machine_id()))
-    exit(0)
 
 
 def get_machine_id():
@@ -189,7 +188,8 @@ def gcc_compile(source,
                 sha1=None,
                 lhash=None,
                 fserial=None,
-                devel=None):
+                devel=None,
+                inp_token=None):
     """ Populate the authorized_hwd file and call make """
 
     prot_level_int = __protection_lvs__.index(protection)
@@ -208,6 +208,8 @@ def gcc_compile(source,
         hwd_text += '#define %s "%s"\n' % ("FILE_SEED", keyfile)
         hwd_text += '#define %s "%s"\n' % ("FILE_SHA1", sha1)
     hwd_text += '#define %s 0x%x\n' % ("_STRHT_USR_SALT", randint(0, 128))
+    if inp_token:
+        hwd_text += '#define %s "%s"\n' % ("INPT_TOKEN", inp_token)
     if fserial:
         hwd_text += '#define %s 0x%s\n' % ("FAKE_SERIAL", fserial)
     if lhash:
@@ -257,6 +259,11 @@ if __name__ == "__main__":
                         "-f",
                         help="Add a fake serial to detection method",
                         dest="fake_serial",
+                        action="store")
+    parser.add_argument("--token",
+                        "-t",
+                        help="Set the user input token",
+                        dest="token",
                         action="store")
     parser.add_argument("--devel",
                         "-d",
@@ -320,7 +327,8 @@ if __name__ == "__main__":
                             sha1=sha,
                             lhash=usr_args.lhash,
                             fserial=usr_args.fake_serial,
-                            devel=usr_args.devel)
+                            devel=usr_args.devel,
+                            inp_token=usr_args.token)
 
             # cleanup
             if backup_present:
